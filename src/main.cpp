@@ -7,22 +7,23 @@
 #include <opencv2/imgproc.hpp>
 
 int main(int argc, const char *argv[]) {
-  cv::Mat sourceImage = cv::imread("./assets/ed-259-xcrI6CPkkJs-unsplash.jpg");
+  cv::Mat sourceImage = cv::imread("./assets/dev/chris-bair-k87Y12f8LHU-unsplash.jpg");
   if (sourceImage.empty()) {
     std::cerr << "Error: image not found\n";
     return 1;
   }
-  cv::Mat image, imageBlurred, imageCanny;
+  cv::Mat image, imageBlurred, imageCanny, imageDilated;
 
-  int height = (double) sourceImage.rows / (double) sourceImage.cols * 600;
-  cv::resize(sourceImage, image, { 600, height }, 0, 0);
+  int width = 300;
+  int height = (double) sourceImage.rows / (double) sourceImage.cols * width;
+  cv::resize(sourceImage, image, { width, height }, 0, 0);
 
-  int size = 19;
+  int size = 21;
   int sigmaX = 5;
   int sigmaY = 5;
 
   int threshold1 = 25;
-  int threshold2 = 75;
+  int threshold2 = 40;
 
   int trackedSize = size;
   int trackedSigmaX = sigmaX;
@@ -77,9 +78,13 @@ int main(int argc, const char *argv[]) {
       cv::GaussianBlur(image, imageBlurred, { size, size }, sigmaX, sigmaY);
       cv::Canny(imageBlurred, imageCanny, threshold1, threshold2);
 
+      cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, {3, 3});
+      cv::dilate(imageCanny, imageDilated, kernel);
+
       cv::imshow("Image", image);
       cv::imshow("Blurred image", imageBlurred);
       cv::imshow("Canny image", imageCanny);
+      cv::imshow("Dilated image", imageDilated);
 
       changed = false;
     }

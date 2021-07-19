@@ -5,8 +5,8 @@ An experiment in animations + shapes in aerial photos.
 ## To build
 
 ```
-brew install cmake
+brew install cmake opencv
 cmake .
 make
-./out/build
+./out/main
 ```
