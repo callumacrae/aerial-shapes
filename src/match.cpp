@@ -13,7 +13,11 @@ int main(int argc, const char *argv[]) {
   auto readFinish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<float> readElapsed = readFinish - readStart;
 
-  std::cout << "Loaded " << imageList.count() << " images" <<
-    (imageList.fromCache() ? " from cache" : "") << " in " <<
-    readElapsed.count() << "s\n";
+  if (imageList.fromCache()) {
+    std::cout << "Loaded " << imageList.count() << " images from cache in " <<
+      readElapsed.count() << "s\n";
+  } else {
+    std::cout << "Loaded and cached " << imageList.count() << " images in " <<
+      readElapsed.count() << "s\n";
+  }
 }
