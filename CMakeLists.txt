@@ -9,8 +9,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 project(AerialShapes)
 
-add_executable(process_images src/process_images.cpp src/lib/detect-edge.cpp)
-add_executable(match src/match.cpp)
+add_executable(process_images src/process_images.cpp src/lib/detect-edge.cpp src/lib/edged-image.cpp src/lib/image-list.cpp)
+add_executable(match src/match.cpp src/lib/detect-edge.cpp src/lib/edged-image.cpp src/lib/image-list.cpp)
 add_executable(tests test/test.cpp)
 
 find_package(OpenCV REQUIRED)
