@@ -5,17 +5,20 @@
 #include <boost/dynamic_bitset.hpp>
 #include <opencv2/core/mat.hpp>
 
+using bitset = boost::dynamic_bitset<unsigned char>;
+
 struct EdgedImage {
   std::string path;
   int width, height;
-  boost::dynamic_bitset<> edges;
+  bitset edges;
 
-  EdgedImage(std::string path, cv::Mat image, boost::dynamic_bitset<> edges)
-    : path(path), width(image.rows), height(image.cols), edges(edges) {}
+  EdgedImage(std::string path, int width, int height, bitset edges)
+    : path(path), width(width), height(height), edges(edges) {}
 };
 
 std::ostream& operator<<(std::ostream& os, const EdgedImage& image)
 {
-    os << image.path << ',' << image.width << ',' << image.height << ',' << image.edges;
+    os << image.path << ',' << image.width << ',' << image.height << ','
+      << image.edges;
     return os;
 }

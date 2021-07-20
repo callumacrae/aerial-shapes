@@ -6,4 +6,4 @@
 #include <opencv2/imgproc.hpp>
 
 cv::Mat detectEdges(cv::Mat &sourceImage);
-boost::dynamic_bitset<> detectEdgesAsBitset(cv::Mat &sourceImage);
+boost::dynamic_bitset<unsigned char> detectEdgesAsBitset(cv::Mat &sourceImage);

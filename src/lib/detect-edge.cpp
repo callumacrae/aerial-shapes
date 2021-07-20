@@ -26,7 +26,7 @@ cv::Mat detectEdges(cv::Mat &sourceImage) {
   return imageDilated;
 }
 
-boost::dynamic_bitset<> detectEdgesAsBitset(cv::Mat &sourceImage) {
+boost::dynamic_bitset<unsigned char> detectEdgesAsBitset(cv::Mat &sourceImage) {
   cv::Mat imageDilated = detectEdges(sourceImage);
 
   int channels = imageDilated.channels();
@@ -40,7 +40,7 @@ boost::dynamic_bitset<> detectEdgesAsBitset(cv::Mat &sourceImage) {
     nRows = 1;
   }
 
-  boost::dynamic_bitset<> bitset(nRows * nCols);
+  boost::dynamic_bitset<unsigned char> bitset(nRows * nCols);
 
   int i = 0;
   for (int y = 0; y < nRows; ++y) {

@@ -10,14 +10,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 project(AerialShapes)
 
 add_executable(process_images src/process_images.cpp src/lib/detect-edge.cpp)
+add_executable(match src/match.cpp)
 add_executable(tests test/test.cpp)
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 target_link_libraries(process_images ${OpenCV_LIBS})
+target_link_libraries(match ${OpenCV_LIBS})
 
 find_package(Boost 1.76.0 REQUIRED COMPONENTS container)
 target_link_libraries(process_images Boost::container)
+target_link_libraries(match Boost::container)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -31,6 +34,6 @@ target_link_libraries(tests Catch2::Catch2)
 
 add_custom_target(
   clang-format
-  COMMAND clang-format -i src/process_images.cpp src/lib/detect-edge.cpp test/test.cpp
+  COMMAND clang-format -i src/process_images.cpp src/match.cpp src/lib/detect-edge.cpp test/test.cpp
   COMMENT "Formatting with clang-format"
 )

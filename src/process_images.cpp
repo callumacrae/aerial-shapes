@@ -33,7 +33,8 @@ int main(int argc, const char *argv[]) {
 
     cv::Mat sourceImage = cv::imread(file.path());
     auto edges = detectEdgesAsBitset(sourceImage);
-    imageList.emplace_front(file.path(), sourceImage, edges);
+    imageList.emplace_front(
+        file.path(), sourceImage.cols, sourceImage.rows, edges);
   }
 
   auto readFinish = std::chrono::high_resolution_clock::now();
