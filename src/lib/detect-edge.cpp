@@ -1,8 +1,9 @@
+#include <boost/dynamic_bitset.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
-std::vector<bool> detectEdges(cv::Mat &sourceImage) {
+cv::Mat detectEdges(cv::Mat &sourceImage) {
   cv::Mat image, imageBlurred, imageCanny, imageDilated;
 
   int width = 300;
@@ -22,29 +23,34 @@ std::vector<bool> detectEdges(cv::Mat &sourceImage) {
   cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, {3, 3});
   cv::dilate(imageCanny, imageDilated, kernel);
 
+  return imageDilated;
+}
+
+boost::dynamic_bitset<> detectEdgesAsBitset(cv::Mat &sourceImage) {
+  cv::Mat imageDilated = detectEdges(sourceImage);
+
   int channels = imageDilated.channels();
   CV_Assert(channels == 1);
 
   int nRows = imageDilated.rows;
   int nCols = imageDilated.cols;
 
-  if (imageDilated.isContinuous())
-  {
+  if (imageDilated.isContinuous()) {
     nCols *= nRows;
     nRows = 1;
   }
 
-  // @todo convert to bitset maybe
-  std::vector<bool> bitmap;
-  bitmap.reserve(nRows * nCols);
+  boost::dynamic_bitset<> bitset(nRows * nCols);
 
+  int i = 0;
   for (int y = 0; y < nRows; ++y) {
     uchar* p = imageDilated.ptr<uchar>(y);
     
     for (int x = 0; x < nCols; ++x) {
-      bitmap.push_back(p[x] != 0);
+      bitset[i] = p[x] != 0;
+      i++;
     }
   }
 
-  return bitmap;
+  return bitset;
 }

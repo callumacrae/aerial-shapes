@@ -1,5 +1,9 @@
+#pragma once
+
+#include <boost/dynamic_bitset.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
-std::vector<bool> detectEdges(cv::Mat &sourceImage);
+cv::Mat detectEdges(cv::Mat &sourceImage);
+boost::dynamic_bitset<> detectEdgesAsBitset(cv::Mat &sourceImage);
