@@ -15,6 +15,10 @@ class ImageList {
 
 public:
   ImageList(std::string dirPath, bool refreshCache = false);
+
+  std::forward_list<EdgedImage>::iterator begin();
+  std::forward_list<EdgedImage>::iterator end();
+
   int count();
   bool fromCache();
 };

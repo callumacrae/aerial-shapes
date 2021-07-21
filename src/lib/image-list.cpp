@@ -92,6 +92,15 @@ void ImageList::generate() {
   }
 }
 
+// @todo is there a nicer way to do this?
+std::forward_list<EdgedImage>::iterator ImageList::begin() {
+  return store.begin();
+}
+
+std::forward_list<EdgedImage>::iterator ImageList::end() {
+  return store.end();
+}
+
 int ImageList::count() {
   return count_;
 }

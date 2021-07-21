@@ -48,7 +48,7 @@ boost::dynamic_bitset<unsigned char> detectEdgesAsBitset(cv::Mat &sourceImage) {
     
     for (int x = 0; x < nCols; ++x) {
       bitset[i] = p[x] != 0;
-      i++;
+      ++i;
     }
   }
 
