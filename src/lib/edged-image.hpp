@@ -19,10 +19,10 @@ public:
   int width, height;
   bitset edges;
 
-  EdgedImage(std::string path, int width, int height, bitset edges)
+  EdgedImage(std::string path, int width, int height, bitset &edges)
     : path(path), width(width), height(height), edges(edges) {}
 
-  ImageMatch matchTo(cv::Mat &templateImage);
+  ImageMatch matchTo(const cv::Mat &templateImage) const;
 
   friend std::ostream& operator<<(std::ostream& os, const EdgedImage& image);
 };

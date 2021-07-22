@@ -19,6 +19,6 @@ public:
   std::forward_list<EdgedImage>::iterator begin();
   std::forward_list<EdgedImage>::iterator end();
 
-  int count();
-  bool fromCache();
+  int count() const;
+  bool fromCache() const;
 };

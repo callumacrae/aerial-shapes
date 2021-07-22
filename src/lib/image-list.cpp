@@ -11,7 +11,7 @@
 #include "edged-image.hpp"
 #include "image-list.hpp"
 
-ImageList::ImageList(std::string dirPath, bool refreshCache) {
+ImageList::ImageList(std::string dirPath, bool refreshCache) : dirPath(dirPath) {
   namespace fs = std::filesystem;
 
   if (!fs::exists(dirPath)) {
@@ -19,8 +19,6 @@ ImageList::ImageList(std::string dirPath, bool refreshCache) {
     std::cerr << "Directory doesn't exist: " << dirPath << '\n';
     exit(1);
   }
-
-  this->dirPath = dirPath;
 
   if (!refreshCache && getCached()) {
     fromCache_ = true;
@@ -101,10 +99,10 @@ std::forward_list<EdgedImage>::iterator ImageList::end() {
   return store.end();
 }
 
-int ImageList::count() {
+int ImageList::count() const {
   return count_;
 }
 
-bool ImageList::fromCache() {
+bool ImageList::fromCache() const {
   return fromCache_;
 }

@@ -33,7 +33,7 @@ int main(int argc, const char *argv[]) {
     return 1;
   }
 
-  for (EdgedImage &sourceImage : sourceImages) {
+  for (const EdgedImage &sourceImage : sourceImages) {
     ImageMatch match = sourceImage.matchTo(templateImage);
     std::cout << sourceImage.path << " match: " << (match.percentage * 100) << "%\n";
   }

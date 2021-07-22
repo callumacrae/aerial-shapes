@@ -5,7 +5,7 @@
 
 #include "edged-image.hpp"
 
-ImageMatch EdgedImage::matchTo(cv::Mat &templateImage) {
+ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage) const {
   int channels = templateImage.channels();
   CV_Assert(channels == 1);
 
@@ -31,7 +31,7 @@ ImageMatch EdgedImage::matchTo(cv::Mat &templateImage) {
   }
 
   for (int y = 0; y < templateImage.rows; ++y) {
-    uchar* p = templateImage.ptr<uchar>(y);
+    const uchar* p = templateImage.ptr<uchar>(y);
 
     for (int x = 0; x < templateImage.cols; ++x) {
       bool templatePixVal = p[x] != 0;
