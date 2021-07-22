@@ -39,11 +39,6 @@ int main(int argc, const char *argv[]) {
   int templateRows = templateImage.rows;
   int templateCols = templateImage.cols;
 
-  if (templateImage.isContinuous()) {
-    templateCols *= templateRows;
-    templateRows = 1;
-  }
-
   for (const EdgedImage &sourceImage : sourceImages) {
     int tested = 0;
     int matching = 0;
@@ -52,10 +47,9 @@ int main(int argc, const char *argv[]) {
     // @todo don't hardcode this number
     // @todo simplify
     int sourceImageActualHeight = 300.f / sourceImage.width * sourceImage.height;
-    float scaleX = 1.f / templateImage.cols * 300.f;
-    float scaleY = 1.f / templateImage.rows * sourceImageActualHeight;
+    float scaleX = 300.f / templateImage.cols;
+    float scaleY = (float) sourceImageActualHeight / templateImage.rows;
 
-    // @todo this is wrong when template image is larger than 300px wide
     float scale = fmin(scaleX, scaleY);
 
     int originX = 0;
