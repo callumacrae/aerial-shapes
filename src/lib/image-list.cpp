@@ -62,14 +62,22 @@ void ImageList::generate() {
   namespace fs = std::filesystem;
 
   for (const auto &file : fs::directory_iterator(dirPath)) {
-    if (file.path().filename() == ".cache") {
-      std::cout << "Skipping: .cache\n";
+    if (std::string(file.path().filename())[0] == '.') {
+      std::cout << "Skipping: " << file.path() << '\n';
       continue;
     }
 
-    std::cout << "Reading: " << file.path() << '\n';
+    std::cout << "Reading: " << file.path();
 
     cv::Mat sourceImage = cv::imread(file.path());
+
+    if (sourceImage.empty()) {
+      std::cout << " (skipping, cannot read)\n";
+      continue;
+    } else {
+      std::cout << '\n';
+    }
+
     auto edges = detectEdgesAsBitset(sourceImage);
     store.emplace_front(
         file.path(), sourceImage.cols, sourceImage.rows, edges);
