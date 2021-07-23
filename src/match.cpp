@@ -63,13 +63,16 @@ static void redraw(int, void*) {
   roi.height = round(CANVAS_HEIGHT * realScale * bestMatch.scale);
 
   cv::Mat cropped = originalImage(roi);
-  cv::Mat scaled;
-  cv::resize(cropped, scaled, cv::Size(CANVAS_WIDTH, CANVAS_HEIGHT));
+  cv::Mat scaledImage;
+  cv::resize(cropped, scaledImage, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT));
+
+  cv::Mat scaledCanvas;
+  cv::resize(canvas, scaledCanvas, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT));
 
   cv::Mat scaledPlusCanvas, out;
   float canvasAlpha = 0.6;
-  cv::bitwise_or(canvas, scaled, scaledPlusCanvas);
-  cv::addWeighted(scaledPlusCanvas, canvasAlpha, scaled, 1.f - canvasAlpha, 0, out);
+  cv::bitwise_or(scaledCanvas, scaledImage, scaledPlusCanvas);
+  cv::addWeighted(scaledPlusCanvas, canvasAlpha, scaledImage, 1.f - canvasAlpha, 0, out);
 
   char text[50];
   sprintf(text, "Percentage match: %.1f%%", bestMatch.percentage * 100);
