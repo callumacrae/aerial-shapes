@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <iostream>
 #include <string>
 
 #include <boost/dynamic_bitset.hpp>
@@ -10,28 +12,81 @@ ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) co
   int channels = templateImage.channels();
   CV_Assert(channels == 1);
 
-  int testedBlack = 0;
-  int matchingBlack = 0;
-  int testedWhite = 0;
-  int matchingWhite = 0;
-
   // 300 is the edges width
   // @todo don't hardcode this number
-  // @todo simplify
   int sourceImageActualHeight = 300.f / width * height;
   float scaleX = 300.f / templateImage.cols;
   float scaleY = (float) sourceImageActualHeight / templateImage.rows;
 
-  float scale = fmin(scaleX, scaleY);
+  float scaleBase = fmin(scaleX, scaleY);
 
-  int originX = 0;
-  int originY = 0;
+  ImageMatch bestMatch;
 
-  if (scale == scaleX) {
-    originY = (sourceImageActualHeight - templateImage.rows * scale) / 2;
-  } else {
-    originX = (300 - templateImage.cols * scale) / 2;
+  float offsetScaleStep = 0.1;
+  int offsetXStep = 5;
+  int offsetYStep = 5;
+
+  float minOffsetScale = 0.4;
+
+  int runs = 0;
+
+  for (float offsetScale = 1; offsetScale >= minOffsetScale; offsetScale -= offsetScaleStep) {
+    float scale = scaleBase * offsetScale;
+
+    int originX = 0;
+    int originY = 0;
+
+    if (scaleX != 0) {
+      originX = (300 - templateImage.cols * scale) / 2;
+    }
+    if (scaleX != 0) {
+      originY = (sourceImageActualHeight - templateImage.rows * scale) / 2;
+    }
+
+    int maxOffsetX = std::min(15, originX);
+    int maxOffsetY = std::min(15, originY);
+
+    for (int offsetXRoot = 0; offsetXRoot <= maxOffsetX; offsetXRoot += offsetXStep) {
+      for (int offsetXMultiplier = -1; offsetXMultiplier <= 1; offsetXMultiplier += 2) {
+        // Search inside out, e.g. 0 -1 1 -2 2 -3 3
+        int offsetX = offsetXRoot * offsetXMultiplier;
+
+        for (int offsetYRoot = 0; offsetYRoot <= maxOffsetY; offsetYRoot += offsetYStep) {
+          for (int offsetYMultiplier = -1; offsetYMultiplier <= 1; offsetYMultiplier += 2) {
+            int offsetY = offsetYRoot * offsetYMultiplier;
+
+            ImageMatch match = matchToStep(templateImage, scale, originX + offsetX, originY + offsetY, whiteBias);
+            runs++;
+
+            if (match.percentage > bestMatch.percentage) {
+              bestMatch = match;
+            }
+
+            if (offsetY == 0) {
+              break;
+            }
+          }
+        }
+
+        // No need to multiply 0 by both -1 and 1
+        if (offsetX == 0) {
+          break;
+        }
+      }
+    }
   }
+
+  std::cout << "Runs: " << runs << '\n';
+
+  return bestMatch;
+}
+
+ImageMatch EdgedImage::matchToStep(const cv::Mat &templateImage,
+    float scale, int originX, int originY, float whiteBias) const {
+  int testedBlack = 0;
+  int matchingBlack = 0;
+  int testedWhite = 0;
+  int matchingWhite = 0;
 
   for (int y = 0; y < templateImage.rows; ++y) {
     const uchar* p = templateImage.ptr<uchar>(y);
@@ -58,7 +113,6 @@ ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) co
     }
   }
 
-  // @todo probably shouldn't treat matching black + white the same
   float percentageBlack = (float) matchingBlack / testedBlack;
   float percentageWhite = (float) matchingWhite / testedWhite;
   float percentage = percentageWhite * whiteBias + percentageBlack * (1 - whiteBias);

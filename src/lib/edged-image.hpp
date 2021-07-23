@@ -13,6 +13,8 @@ struct ImageMatch {
 class EdgedImage {
   using bitset = boost::dynamic_bitset<unsigned char>;
 
+  ImageMatch matchToStep(const cv::Mat &templateImage, float scale, int originX, int originY, float whiteBias = 0.75) const;
+
   // @todo make this a bit more classey
 public:
   std::string path;

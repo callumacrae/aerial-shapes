@@ -16,7 +16,7 @@
 // todo can we get rid of this pointless initialisation?
 static ImageList sourceImages;
 
-static int width = 50;
+static int width = 100;
 static int height = 550;
 static int lineWidth = 8;
 static int whiteBias = 75;
@@ -42,7 +42,11 @@ static void redraw(int, void*) {
     }
   }
 
-  /* std::cout << "\nBest match is " << bestMatchImage->path << " with " << (bestMatch.percentage * 100) << "%\n"; */
+  std::cout << "\nBest match is " << bestMatchImage->path;
+  std::cout << "% match: " << (bestMatch.percentage * 100) << "%\n";
+  std::cout << "Scale: " << bestMatch.scale << '\n';
+  std::cout << "Offset x: " << bestMatch.originX << '\n';
+  std::cout << "Offset y: " << bestMatch.originY << "\n\n";
 
   cv::Mat originalImage = cv::imread(bestMatchImage->path);
 
@@ -64,7 +68,7 @@ static void redraw(int, void*) {
   cv::resize(cropped, scaled, cv::Size(CANVAS_WIDTH, CANVAS_HEIGHT));
 
   cv::Mat scaledPlusCanvas, out;
-  float canvasAlpha = 0.4;
+  float canvasAlpha = 0.6;
   cv::bitwise_or(canvas, scaled, scaledPlusCanvas);
   cv::addWeighted(scaledPlusCanvas, canvasAlpha, scaled, 1.f - canvasAlpha, 0, out);
 
