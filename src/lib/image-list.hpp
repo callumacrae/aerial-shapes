@@ -14,6 +14,7 @@ class ImageList {
   void generate();
 
 public:
+  ImageList();
   ImageList(std::string dirPath, bool refreshCache = false);
 
   std::forward_list<EdgedImage>::iterator begin();

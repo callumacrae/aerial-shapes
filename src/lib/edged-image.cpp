@@ -47,6 +47,7 @@ ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage) const {
     }
   }
 
+  // @todo probably shouldn't treat matching black + white the same
   float percentage = (float) matching / tested;
   return ImageMatch{percentage, scale, originX, originY};
 }

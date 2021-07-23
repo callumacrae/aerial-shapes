@@ -11,6 +11,8 @@
 #include "edged-image.hpp"
 #include "image-list.hpp"
 
+ImageList::ImageList() {};
+
 ImageList::ImageList(std::string dirPath, bool refreshCache) : dirPath(dirPath) {
   namespace fs = std::filesystem;
 
