@@ -3,12 +3,14 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include "../config.h"
+
 cv::Mat detectEdges(cv::Mat &sourceImage) {
   cv::Mat image, imageBlurred, imageCanny, imageDilated;
 
-  int width = 300;
-  int height = (double) sourceImage.rows / (double) sourceImage.cols * width;
-  cv::resize(sourceImage, image, { width, height }, 0, 0);
+  int width = EDGE_DETECTION_WIDTH;
+  int height = (double) sourceImage.rows / sourceImage.cols * width;
+  cv::resize(sourceImage, image, { width, height });
 
   int size = 21;
   int sigmaX = 5;
@@ -20,10 +22,17 @@ cv::Mat detectEdges(cv::Mat &sourceImage) {
   cv::GaussianBlur(image, imageBlurred, { size, size }, sigmaX, sigmaY);
   cv::Canny(imageBlurred, imageCanny, threshold1, threshold2);
 
-  cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, {3, 3});
-  cv::dilate(imageCanny, imageDilated, kernel);
+  cv::Mat imageResized;
+  if (EDGE_DETECTION_WIDTH == CACHED_SOURCE_WIDTH) {
+    return imageCanny;
+  } 
 
-  return imageDilated;
+  int finalWidth = CACHED_SOURCE_WIDTH;
+  int finalHeight = (double) sourceImage.rows / sourceImage.cols * finalWidth;
+
+  cv::resize(imageCanny, imageResized, { finalWidth, finalHeight });
+
+  return imageResized;
 }
 
 boost::dynamic_bitset<unsigned char> detectEdgesAsBitset(cv::Mat &sourceImage) {

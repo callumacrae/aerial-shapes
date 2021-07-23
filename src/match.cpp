@@ -10,8 +10,7 @@
 #include "lib/image-list.hpp"
 #include "lib/edged-image.hpp"
 
-#define CANVAS_WIDTH 750
-#define CANVAS_HEIGHT 500
+#include "config.h"
 
 // todo can we get rid of this pointless initialisation?
 static ImageList sourceImages;
@@ -55,7 +54,7 @@ static void redraw(int, void*) {
     exit(1);
   }
 
-  float realScale = bestMatchImage->width / 300.f;
+  float realScale = (float) bestMatchImage->width / CACHED_SOURCE_WIDTH;
 
   cv::Rect roi;
   roi.x = round(bestMatch.originX * realScale);

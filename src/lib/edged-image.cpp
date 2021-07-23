@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <string>
 
@@ -6,16 +7,15 @@
 #include <opencv2/core/mat.hpp>
 
 #include "edged-image.hpp"
+#include "../config.h"
 
 // whiteBias can be hardcoded once i've figured out what it should be
 ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) const {
   int channels = templateImage.channels();
   CV_Assert(channels == 1);
 
-  // 300 is the edges width
-  // @todo don't hardcode this number
-  int sourceImageActualHeight = 300.f / width * height;
-  float scaleX = 300.f / templateImage.cols;
+  int sourceImageActualHeight = (float) CACHED_SOURCE_WIDTH / width * height;
+  float scaleX = (float) CACHED_SOURCE_WIDTH / templateImage.cols;
   float scaleY = (float) sourceImageActualHeight / templateImage.rows;
 
   float scaleBase = fmin(scaleX, scaleY);
@@ -26,7 +26,8 @@ ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) co
   int offsetXStep = 5;
   int offsetYStep = 5;
 
-  float minOffsetScale = 0.4;
+  float minOffsetScale = fmax(0.4, (float) CANVAS_WIDTH / width);
+  int maxOffset = 15;
 
   int runs = 0;
 
@@ -37,14 +38,15 @@ ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) co
     int originY = 0;
 
     if (scaleX != 0) {
-      originX = (300 - templateImage.cols * scale) / 2;
+      originX = (CACHED_SOURCE_WIDTH - templateImage.cols * scale) / 2;
     }
     if (scaleX != 0) {
       originY = (sourceImageActualHeight - templateImage.rows * scale) / 2;
     }
 
-    int maxOffsetX = std::min(15, originX);
-    int maxOffsetY = std::min(15, originY);
+    // todo vary step and max depending on scale?
+    int maxOffsetX = std::min(maxOffset, originX);
+    int maxOffsetY = std::min(maxOffset, originY);
 
     for (int offsetXRoot = 0; offsetXRoot <= maxOffsetX; offsetXRoot += offsetXStep) {
       for (int offsetXMultiplier = -1; offsetXMultiplier <= 1; offsetXMultiplier += 2) {
@@ -96,7 +98,7 @@ ImageMatch EdgedImage::matchToStep(const cv::Mat &templateImage,
 
       int transformedX = originX + floor((float) x * scale);
       int transformedY = originY + floor((float) y * scale);
-      int i = transformedY * 300 + transformedX;
+      int i = transformedY * CACHED_SOURCE_WIDTH + transformedX;
       bool sourcePixVal = edges[i];
 
       if (templatePixVal == 1) {
