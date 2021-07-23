@@ -10,9 +10,8 @@
 #include "lib/image-list.hpp"
 #include "lib/edged-image.hpp"
 
-// todo this should be 750x500 but it errors
-#define CANVAS_WIDTH 400
-#define CANVAS_HEIGHT 267
+#define CANVAS_WIDTH 750
+#define CANVAS_HEIGHT 500
 
 // todo can we get rid of this pointless initialisation?
 static ImageList sourceImages;
@@ -20,6 +19,7 @@ static ImageList sourceImages;
 static int width = 50;
 static int height = 550;
 static int lineWidth = 8;
+static int whiteBias = 75;
 
 static void redraw(int, void*) {
   cv::Mat canvas = cv::Mat::zeros(CANVAS_HEIGHT, CANVAS_WIDTH, CV_8UC3);
@@ -35,7 +35,7 @@ static void redraw(int, void*) {
   EdgedImage *bestMatchImage = nullptr;
 
   for (EdgedImage &sourceImage : sourceImages) {
-    ImageMatch match = sourceImage.matchTo(greyCanvas);
+    ImageMatch match = sourceImage.matchTo(greyCanvas, whiteBias / 100.f);
     if (match.percentage > bestMatch.percentage) {
       bestMatch = match;
       bestMatchImage = &sourceImage;
@@ -64,7 +64,7 @@ static void redraw(int, void*) {
   cv::resize(cropped, scaled, cv::Size(CANVAS_WIDTH, CANVAS_HEIGHT));
 
   cv::Mat scaledPlusCanvas, out;
-  float canvasAlpha = 0.3;
+  float canvasAlpha = 0.4;
   cv::bitwise_or(canvas, scaled, scaledPlusCanvas);
   cv::addWeighted(scaledPlusCanvas, canvasAlpha, scaled, 1.f - canvasAlpha, 0, out);
 
@@ -125,6 +125,7 @@ int main(int argc, const char *argv[]) {
   cv::createTrackbar("Width", sliderWindow, &width, CANVAS_WIDTH + 50, redraw);
   cv::createTrackbar("Height", sliderWindow, &height, CANVAS_HEIGHT + 50, redraw);
   cv::createTrackbar("Line width", sliderWindow, &lineWidth, 50, redraw);
+  cv::createTrackbar("White bias * 100", sliderWindow, &whiteBias, 100, redraw);
 
   redraw(0, 0);
 

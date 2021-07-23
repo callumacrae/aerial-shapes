@@ -5,12 +5,15 @@
 
 #include "edged-image.hpp"
 
-ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage) const {
+// whiteBias can be hardcoded once i've figured out what it should be
+ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) const {
   int channels = templateImage.channels();
   CV_Assert(channels == 1);
 
-  int tested = 0;
-  int matching = 0;
+  int testedBlack = 0;
+  int matchingBlack = 0;
+  int testedWhite = 0;
+  int matchingWhite = 0;
 
   // 300 is the edges width
   // @todo don't hardcode this number
@@ -36,19 +39,29 @@ ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage) const {
     for (int x = 0; x < templateImage.cols; ++x) {
       bool templatePixVal = p[x] != 0;
 
-      int transformedX = originX + round((float) x * scale);
-      int transformedY = originY + round((float) y * scale);
+      int transformedX = originX + floor((float) x * scale);
+      int transformedY = originY + floor((float) y * scale);
       int i = transformedY * 300 + transformedX;
       bool sourcePixVal = edges[i];
-      if (templatePixVal == sourcePixVal) {
-        ++matching;
+
+      if (templatePixVal == 1) {
+        if (templatePixVal == sourcePixVal) {
+          ++matchingWhite;
+        }
+        ++testedWhite;
+      } else {
+        if (templatePixVal == sourcePixVal) {
+          ++matchingBlack;
+        }
+        ++testedBlack;
       }
-      ++tested;
     }
   }
 
   // @todo probably shouldn't treat matching black + white the same
-  float percentage = (float) matching / tested;
+  float percentageBlack = (float) matchingBlack / testedBlack;
+  float percentageWhite = (float) matchingWhite / testedWhite;
+  float percentage = percentageWhite * whiteBias + percentageBlack * (1 - whiteBias);
   return ImageMatch{percentage, scale, originX, originY};
 }
 
