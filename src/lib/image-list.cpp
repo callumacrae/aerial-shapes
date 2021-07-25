@@ -1,14 +1,3 @@
-#include <filesystem>
-#include <forward_list>
-#include <fstream>
-#include <iostream>
-#include <string>
-
-#include <boost/dynamic_bitset.hpp>
-#include <opencv2/core/mat.hpp>
-
-#include "detect-edge.hpp"
-#include "edged-image.hpp"
 #include "image-list.hpp"
 
 ImageList::ImageList() {};

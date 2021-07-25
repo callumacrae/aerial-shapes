@@ -1,13 +1,4 @@
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <string>
-
-#include <boost/dynamic_bitset.hpp>
-#include <opencv2/core/mat.hpp>
-
 #include "edged-image.hpp"
-#include "../config.h"
 
 // whiteBias can be hardcoded once i've figured out what it should be
 ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) const {

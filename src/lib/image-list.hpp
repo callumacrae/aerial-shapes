@@ -1,8 +1,14 @@
 #pragma once
 
+#include <filesystem>
 #include <forward_list>
+#include <fstream>
 
+#include "../precompiled.h"
+
+#include "detect-edge.hpp"
 #include "edged-image.hpp"
+#include "image-list.hpp"
 
 class ImageList {
   std::forward_list<EdgedImage> store;

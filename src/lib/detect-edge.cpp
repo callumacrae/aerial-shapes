@@ -1,9 +1,3 @@
-#include <boost/dynamic_bitset.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-
-#include "../config.h"
 #include "detect-edge.hpp"
 
 cv::Mat detectEdges(cv::Mat &sourceImage, int blurSize, int sigmaX, int sigmaY,

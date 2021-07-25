@@ -1,9 +1,10 @@
 #pragma once
 
-#include <string>
+#include <algorithm>
 
-#include <boost/dynamic_bitset.hpp>
-#include <opencv2/core/mat.hpp>
+#include "../precompiled.h"
+
+#include "../config.h"
 
 struct ImageMatch {
   float percentage, scale;

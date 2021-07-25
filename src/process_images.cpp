@@ -1,8 +1,7 @@
-#include <chrono>
-#include <iostream>
-#include <string>
+#include "precompiled.h"
 
 #include "config.h"
+
 #include "lib/detect-edge.hpp"
 #include "lib/image-list.hpp"
 

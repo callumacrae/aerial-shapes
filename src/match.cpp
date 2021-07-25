@@ -1,17 +1,10 @@
-#include <chrono>
-#include <iostream>
-#include <string>
-#include <cmath>
+#include "precompiled.h"
 
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
+#include "config.h"
 
 #include "lib/edged-image.hpp"
 #include "lib/detect-edge.hpp"
 #include "lib/image-list.hpp"
-
-#include "config.h"
 
 // todo can we get rid of this pointless initialisation?
 static ImageList sourceImages;
