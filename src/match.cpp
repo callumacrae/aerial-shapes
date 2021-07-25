@@ -7,8 +7,9 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include "lib/image-list.hpp"
 #include "lib/edged-image.hpp"
+#include "lib/detect-edge.hpp"
+#include "lib/image-list.hpp"
 
 #include "config.h"
 
@@ -17,7 +18,7 @@ static ImageList sourceImages;
 
 static int width = 100;
 static int height = 550;
-static int lineWidth = 8;
+static int lineWidth = 4;
 static int whiteBias = 75;
 
 static void redraw(int, void*) {
@@ -54,6 +55,21 @@ static void redraw(int, void*) {
     exit(1);
   }
 
+  cv::Mat greyEdges = detectEdges(originalImage);
+  cv::Mat dilatedEdges, edges, scaledEdges, scaledPlusEdges;
+  cv::cvtColor(greyEdges, edges, cv::COLOR_GRAY2BGR);
+
+  cv::Mat mask;
+  cv::threshold(greyEdges, mask, 0, 255, cv::THRESH_BINARY);
+  edges.setTo(cv::Scalar(255, 0, 0), mask);
+
+  cv::resize(edges, scaledEdges, originalImage.size());
+  cv::bitwise_or(scaledEdges, originalImage, scaledPlusEdges);
+
+  cv::Mat sourcePlusEdges;
+  float edgesAlpha = 0.9;
+  cv::addWeighted(scaledPlusEdges, edgesAlpha, originalImage, 1.f - edgesAlpha, 0, sourcePlusEdges);
+
   float realScale = (float) bestMatchImage->width / CACHED_SOURCE_WIDTH;
 
   cv::Rect roi;
@@ -62,16 +78,16 @@ static void redraw(int, void*) {
   roi.width = round(CANVAS_WIDTH * realScale * bestMatch.scale);
   roi.height = round(CANVAS_HEIGHT * realScale * bestMatch.scale);
 
-  cv::Mat cropped = originalImage(roi);
+  cv::Mat cropped = sourcePlusEdges(roi);
   cv::Mat scaledImage;
   cv::resize(cropped, scaledImage, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT));
 
-  cv::Mat scaledCanvas;
+  cv::Mat scaledCanvas, scaledPlusCanvas;
   cv::resize(canvas, scaledCanvas, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT));
-
-  cv::Mat scaledPlusCanvas, out;
-  float canvasAlpha = 0.6;
   cv::bitwise_or(scaledCanvas, scaledImage, scaledPlusCanvas);
+
+  cv::Mat out;
+  float canvasAlpha = 0.6;
   cv::addWeighted(scaledPlusCanvas, canvasAlpha, scaledImage, 1.f - canvasAlpha, 0, out);
 
   char text[50];

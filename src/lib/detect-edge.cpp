@@ -4,22 +4,17 @@
 #include <opencv2/imgproc.hpp>
 
 #include "../config.h"
+#include "detect-edge.hpp"
 
-cv::Mat detectEdges(cv::Mat &sourceImage) {
+cv::Mat detectEdges(cv::Mat &sourceImage, int blurSize, int sigmaX, int sigmaY,
+    int threshold1, int threshold2) {
   cv::Mat image, imageBlurred, imageCanny, imageDilated;
 
   int width = EDGE_DETECTION_WIDTH;
   int height = (double) sourceImage.rows / sourceImage.cols * width;
   cv::resize(sourceImage, image, { width, height });
 
-  int size = 21;
-  int sigmaX = 5;
-  int sigmaY = 5;
-
-  int threshold1 = 25;
-  int threshold2 = 40;
-
-  cv::GaussianBlur(image, imageBlurred, { size, size }, sigmaX, sigmaY);
+  cv::GaussianBlur(image, imageBlurred, { blurSize, blurSize }, sigmaX, sigmaY);
   cv::Canny(imageBlurred, imageCanny, threshold1, threshold2);
 
   cv::Mat imageResized;
