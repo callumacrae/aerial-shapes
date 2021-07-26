@@ -11,24 +11,22 @@ ImageList::ImageList(std::string dirPath) : dirPath(dirPath) {
     exit(1);
   }
 
-  if (getCached()) {
-    fromCache_ = true;
-  }
-};
+  getStored();
+}
 
-bool ImageList::getCached() {
+bool ImageList::getStored() {
   namespace fs = std::filesystem;
 
-  fs::path cachePath { dirPath };
-  cachePath.append(".cache");
-  std::ifstream cacheFile(cachePath);
-  if (!cacheFile) {
+  fs::path storePath { dirPath };
+  storePath.append(".store");
+  std::ifstream storeFile(storePath);
+  if (!storeFile) {
     return false;
   }
 
   std::string line;
 
-  while (std::getline(cacheFile, line)) {
+  while (std::getline(storeFile, line)) {
     size_t first = line.find(',');
     size_t second = line.find(',', first + 1);
     size_t third = line.find(',', second + 1);
@@ -42,7 +40,7 @@ bool ImageList::getCached() {
     count_++;
   }
 
-  cacheFile.close();
+  storeFile.close();
 
   return true;
 }
@@ -75,21 +73,19 @@ void ImageList::generate() {
 
     count_++;
   }
-
-  fromCache_ = false;
 }
 
 void ImageList::save() {
-  std::filesystem::path cachePath { dirPath };
-  cachePath.append(".cache");
-  std::ofstream cacheFile(cachePath);
-  if (!cacheFile) {
-    std::cerr << "Failed to open cache file.\n";
+  std::filesystem::path storePath { dirPath };
+  storePath.append(".store");
+  std::ofstream storeFile(storePath);
+  if (!storeFile) {
+    std::cerr << "Failed to open store file.\n";
     exit(1);
   }
 
   for (const EdgedImage &image : store) {
-    cacheFile << image << '\n';
+    storeFile << image << '\n';
   }
 }
 
@@ -108,8 +104,4 @@ EdgedImage ImageList::at(size_t pos) {
 
 int ImageList::count() const {
   return count_;
-}
-
-bool ImageList::fromCache() const {
-  return fromCache_;
 }

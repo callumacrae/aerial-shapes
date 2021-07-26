@@ -63,7 +63,7 @@ static void redraw(int, void*) {
   float edgesAlpha = 0.9;
   cv::addWeighted(scaledPlusEdges, edgesAlpha, originalImage, 1.f - edgesAlpha, 0, sourcePlusEdges);
 
-  float realScale = (float) bestMatchImage->width / CACHED_SOURCE_WIDTH;
+  float realScale = (float) bestMatchImage->width / STORED_EDGES_WIDTH;
 
   cv::Rect roi;
   roi.x = round(bestMatch.originX * realScale);
@@ -101,13 +101,8 @@ int main(int argc, const char *argv[]) {
   auto readFinish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<float> readElapsed = readFinish - readStart;
 
-  if (sourceImages.fromCache()) {
-    std::cout << "Loaded " << sourceImages.count() << " images from cache in " <<
-      readElapsed.count() << "s\n";
-  } else {
-    std::cout << "Loaded and cached " << sourceImages.count() << " images in " <<
-      readElapsed.count() << "s\n";
-  }
+  std::cout << "Loaded " << sourceImages.count() << " images from store in " <<
+    readElapsed.count() << "s\n";
 
   if (argv[2]) {
     cv::Mat templateImage = cv::imread(argv[2], cv::IMREAD_GRAYSCALE);

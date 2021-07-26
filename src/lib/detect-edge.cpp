@@ -12,11 +12,11 @@ cv::Mat detectEdges(cv::Mat &sourceImage, int blurSize, int sigmaX, int sigmaY,
   cv::Canny(imageBlurred, imageCanny, threshold1, threshold2);
 
   cv::Mat imageResized;
-  if (EDGE_DETECTION_WIDTH == CACHED_SOURCE_WIDTH) {
+  if (EDGE_DETECTION_WIDTH == STORED_EDGES_WIDTH) {
     return imageCanny;
   } 
 
-  int finalWidth = CACHED_SOURCE_WIDTH;
+  int finalWidth = STORED_EDGES_WIDTH;
   int finalHeight = (double) sourceImage.rows / sourceImage.cols * finalWidth;
 
   cv::resize(imageCanny, imageResized, { finalWidth, finalHeight });

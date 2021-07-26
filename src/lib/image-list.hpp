@@ -14,9 +14,8 @@ class ImageList {
   std::vector<EdgedImage> store;
   std::string dirPath;
   int count_ = 0;
-  bool fromCache_ = false;
 
-  bool getCached();
+  bool getStored();
 
 public:
   ImageList();
@@ -30,5 +29,4 @@ public:
   EdgedImage at(size_t pos);
 
   int count() const;
-  bool fromCache() const;
 };

@@ -5,8 +5,8 @@ ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) co
   int channels = templateImage.channels();
   CV_Assert(channels == 1);
 
-  int sourceImageActualHeight = (float) CACHED_SOURCE_WIDTH / width * height;
-  float scaleX = (float) CACHED_SOURCE_WIDTH / templateImage.cols;
+  int sourceImageActualHeight = (float) STORED_EDGES_WIDTH / width * height;
+  float scaleX = (float) STORED_EDGES_WIDTH / templateImage.cols;
   float scaleY = (float) sourceImageActualHeight / templateImage.rows;
 
   float scaleBase = fmin(scaleX, scaleY);
@@ -29,7 +29,7 @@ ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) co
     int originY = 0;
 
     if (scaleX != 0) {
-      originX = (CACHED_SOURCE_WIDTH - templateImage.cols * scale) / 2;
+      originX = (STORED_EDGES_WIDTH - templateImage.cols * scale) / 2;
     }
     if (scaleX != 0) {
       originY = (sourceImageActualHeight - templateImage.rows * scale) / 2;
@@ -89,7 +89,7 @@ ImageMatch EdgedImage::matchToStep(const cv::Mat &templateImage,
 
       int transformedX = originX + floor((float) x * scale);
       int transformedY = originY + floor((float) y * scale);
-      int i = transformedY * CACHED_SOURCE_WIDTH + transformedX;
+      int i = transformedY * STORED_EDGES_WIDTH + transformedX;
       bool sourcePixVal = edges[i];
 
       if (templatePixVal == 1) {
@@ -120,7 +120,7 @@ cv::Mat EdgedImage::edgesAsMatrix() const {
     vec.push_back(edges[i] ? 255 : 0);
   }
 
-  int cols = CACHED_SOURCE_WIDTH;
+  int cols = STORED_EDGES_WIDTH;
   int rows = edges.size() / cols;
 
   cv::Mat mat(rows, cols, CV_8UC1);

@@ -47,7 +47,7 @@ int main(int argc, const char *argv[]) {
 
   ImageList imageList(argv[1]);
 
-  if (imageList.fromCache()) {
+  if (imageList.count()) {
     auto readFinish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> readElapsed = readFinish - readStart;
 
