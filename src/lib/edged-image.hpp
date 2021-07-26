@@ -22,6 +22,7 @@ public:
   int width, height;
   bitset edges;
 
+  EdgedImage() {}
   EdgedImage(std::string path, int width, int height, bitset &edges)
     : path(path), width(width), height(height), edges(edges) {}
 

@@ -27,6 +27,15 @@ target_link_libraries(process_images Boost::container)
 target_link_libraries(match Boost::container)
 
 include(FetchContent)
+
+FetchContent_Declare(
+  linenoise
+  GIT_REPOSITORY https://github.com/yhirose/cpp-linenoise
+)
+
+FetchContent_MakeAvailable(linenoise)
+target_link_libraries(process_images linenoise)
+
 FetchContent_Declare(
   Catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git

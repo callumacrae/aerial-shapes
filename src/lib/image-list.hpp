@@ -11,20 +11,23 @@
 #include "image-list.hpp"
 
 class ImageList {
-  std::forward_list<EdgedImage> store;
+  std::vector<EdgedImage> store;
   std::string dirPath;
-  int count_;
-  bool fromCache_;
+  int count_ = 0;
+  bool fromCache_ = false;
 
   bool getCached();
-  void generate();
 
 public:
   ImageList();
-  ImageList(std::string dirPath, bool refreshCache = false);
+  ImageList(std::string dirPath);
 
-  std::forward_list<EdgedImage>::iterator begin();
-  std::forward_list<EdgedImage>::iterator end();
+  void generate();
+  void save();
+
+  std::vector<EdgedImage>::iterator begin();
+  std::vector<EdgedImage>::iterator end();
+  EdgedImage at(size_t pos);
 
   int count() const;
   bool fromCache() const;

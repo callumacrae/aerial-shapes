@@ -2,7 +2,7 @@
 
 ImageList::ImageList() {};
 
-ImageList::ImageList(std::string dirPath, bool refreshCache) : dirPath(dirPath) {
+ImageList::ImageList(std::string dirPath) : dirPath(dirPath) {
   namespace fs = std::filesystem;
 
   if (!fs::exists(dirPath)) {
@@ -11,10 +11,8 @@ ImageList::ImageList(std::string dirPath, bool refreshCache) : dirPath(dirPath) 
     exit(1);
   }
 
-  if (!refreshCache && getCached()) {
+  if (getCached()) {
     fromCache_ = true;
-  } else {
-    generate();
   }
 };
 
@@ -40,7 +38,7 @@ bool ImageList::getCached() {
     int height = std::stoi(line.substr(second + 1, third - second - 1));
     boost::dynamic_bitset<unsigned char> edges(line.substr(third + 1));
 
-    store.emplace_front(path, width, height, edges);
+    store.emplace_back(path, width, height, edges);
     count_++;
   }
 
@@ -51,6 +49,9 @@ bool ImageList::getCached() {
 
 void ImageList::generate() {
   namespace fs = std::filesystem;
+  
+  store.clear();
+  count_ = 0;
 
   for (const auto &file : fs::directory_iterator(dirPath)) {
     if (std::string(file.path().filename())[0] == '.') {
@@ -70,12 +71,15 @@ void ImageList::generate() {
     }
 
     auto edges = detectEdgesAsBitset(sourceImage);
-    store.emplace_front(
-        file.path(), sourceImage.cols, sourceImage.rows, edges);
+    store.emplace_back(file.path(), sourceImage.cols, sourceImage.rows, edges);
 
     count_++;
   }
 
+  fromCache_ = false;
+}
+
+void ImageList::save() {
   std::filesystem::path cachePath { dirPath };
   cachePath.append(".cache");
   std::ofstream cacheFile(cachePath);
@@ -90,12 +94,16 @@ void ImageList::generate() {
 }
 
 // @todo is there a nicer way to do this?
-std::forward_list<EdgedImage>::iterator ImageList::begin() {
+std::vector<EdgedImage>::iterator ImageList::begin() {
   return store.begin();
 }
 
-std::forward_list<EdgedImage>::iterator ImageList::end() {
+std::vector<EdgedImage>::iterator ImageList::end() {
   return store.end();
+}
+
+EdgedImage ImageList::at(size_t pos) {
+  return store.at(pos);
 }
 
 int ImageList::count() const {
