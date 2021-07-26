@@ -1,4 +1,4 @@
-#include "linenoise.hpp"
+#include <linenoise.hpp>
 
 #include "precompiled.h"
 
@@ -43,14 +43,16 @@ int main(int argc, const char *argv[]) {
     exit(1);
   }
 
+  std::cout << std::fixed << std::setprecision(2);
+
   ImageList imageList(argv[1]);
 
   if (imageList.fromCache()) {
     auto readFinish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> readElapsed = readFinish - readStart;
 
-    printf("Loaded %d images from store in %.2fs\n", imageList.count(),
-        readElapsed.count());
+     std::cout << "Loaded " << imageList.count() << " images from store in " <<
+       readElapsed.count() << "s\n";
   } else {
     std::cout << "No store found for this directory, type \"generate\" to " <<
       "generate one\n";
@@ -87,19 +89,19 @@ int main(int argc, const char *argv[]) {
 
       auto finish = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsed = finish - start;
-      printf("Generated in %.2fs\n", elapsed.count());
+      std::cout << "Generated in " << elapsed.count() << "s\n";
     } else if (command == "save") {
       imageList.save();
 
       auto finish = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsed = finish - start;
-      printf("Saved in %.2fs\n", elapsed.count());
+      std::cout << "Saved in " << elapsed.count() << "s\n";
     } else if (command == "ls") {
-      printf("%d items in store:\n\n", imageList.count());
+      std::cout << imageList.count() << " images in store:\n\n";
 
       int i = 0;
       for (const EdgedImage &image : imageList) {
-        printf("#%d: %s (%dx%d)\n", i, image.path.c_str(), image.width, image.height);
+        std::cout << i << ": " << image.path << " (" << image.width << "x" << image.height << ")\n";
         i++;
       }
 
