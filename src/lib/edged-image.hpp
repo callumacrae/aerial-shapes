@@ -27,6 +27,7 @@ public:
     : path(path), width(width), height(height), edges(edges) {}
 
   ImageMatch matchTo(const cv::Mat &templateImage, float whiteBias = 0.75) const;
+  cv::Mat edgesAsMatrix() const;
 
   friend std::ostream& operator<<(std::ostream& os, const EdgedImage& image);
 };

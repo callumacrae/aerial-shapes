@@ -14,14 +14,14 @@ static int threshold1 = EDGE_DETECTION_CANNY_THRESHOLD_1;
 static int threshold2 = EDGE_DETECTION_CANNY_THRESHOLD_2;
 
 static cv::Mat sourceImage;
+static cv::Mat templateImage;
 
 static void redrawPreview(int, void*) {
   if (blurSize % 2 == 0) {
     blurSize++;
   }
 
-  cv::Mat greyEdges = detectEdges(sourceImage, blurSize, sigmaX, sigmaY,
-      threshold1, threshold2);
+  cv::Mat greyEdges = templateImage;
   cv::Mat dilatedEdges, edges, scaledEdges, scaledPlusEdges;
   cv::cvtColor(greyEdges, edges, cv::COLOR_GRAY2BGR);
 
@@ -122,7 +122,8 @@ int main(int argc, const char *argv[]) {
       std::cout << "Previewing: " << image.path << "\n";
 
       sourceImage = cv::imread(image.path);
-
+      templateImage = image.edgesAsMatrix();
+      
       if (sourceImage.empty()) {
         std::cerr << "Could not read source image\n";
         return 1;

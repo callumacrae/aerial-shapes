@@ -112,6 +112,23 @@ ImageMatch EdgedImage::matchToStep(const cv::Mat &templateImage,
   return ImageMatch{percentage, scale, originX, originY};
 }
 
+cv::Mat EdgedImage::edgesAsMatrix() const {
+  std::vector<uchar> vec;
+  vec.reserve(edges.size());
+
+  for (int i = 0; i < edges.size(); ++i) {
+    vec.push_back(edges[i] ? 255 : 0);
+  }
+
+  int cols = CACHED_SOURCE_WIDTH;
+  int rows = edges.size() / cols;
+
+  cv::Mat mat(rows, cols, CV_8UC1);
+  memcpy(mat.data, vec.data(), vec.size() * sizeof(uchar));
+
+  return mat;
+}
+
 std::ostream& operator<<(std::ostream& os, const EdgedImage& image) {
     os << image.path << ',' << image.width << ',' << image.height << ','
       << image.edges;
