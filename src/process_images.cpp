@@ -24,11 +24,11 @@ int main(int argc, const char *argv[]) {
     auto readFinish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> readElapsed = readFinish - readStart;
 
-     std::cout << "Loaded " << imageList.count() << " images from store in " <<
-       readElapsed.count() << "s\n";
+    std::cout << "Loaded " << imageList.count() << " images from store in "
+              << readElapsed.count() << "s\n";
   } else {
-    std::cout << "No store found for this directory, type \"generate\" to " <<
-      "generate one\n";
+    std::cout << "No store found for this directory, type \"generate\" to "
+              << "generate one\n";
   }
 
   while (true) {
@@ -60,12 +60,14 @@ int main(int argc, const char *argv[]) {
 
     if (command == "generate" || command == "reset") {
       if (command == "generate" && imageList.count() > 0) {
-        std::cerr << "Store has already been generated: use \"reset\" to reset\n";
+        std::cerr
+            << "Store has already been generated: use \"reset\" to reset\n";
         continue;
       } else if (command == "reset") {
         std::cout << '\n';
         std::string line;
-        auto quit = linenoise::Readline("Are you sure you wish to reset? (y/N) ", line);
+        auto quit =
+            linenoise::Readline("Are you sure you wish to reset? (y/N) ", line);
 
         if (quit) {
           break;
@@ -88,7 +90,8 @@ int main(int argc, const char *argv[]) {
 
       int i = 0;
       for (const EdgedImage &image : imageList) {
-        std::cout << i << ": " << image.path << " (" << image.width << "x" << image.height << ")\n";
+        std::cout << i << ": " << image.path << " (" << image.width << "x"
+                  << image.height << ")\n";
         i++;
       }
 

@@ -2,8 +2,8 @@
 
 #include "config.h"
 
-#include "lib/edged-image.hpp"
 #include "lib/detect-edge.hpp"
+#include "lib/edged-image.hpp"
 #include "lib/image-list.hpp"
 
 // todo can we get rid of this pointless initialisation?
@@ -14,7 +14,7 @@ static int height = 550;
 static int lineWidth = 4;
 static int whiteBias = 75;
 
-static void redraw(int, void*) {
+static void redraw(int, void *) {
   cv::Mat canvas = cv::Mat::zeros(CANVAS_HEIGHT, CANVAS_WIDTH, CV_8UC3);
 
   cv::Point pointA{(CANVAS_WIDTH - width) / 2, (CANVAS_HEIGHT - height) / 2};
@@ -61,9 +61,10 @@ static void redraw(int, void*) {
 
   cv::Mat sourcePlusEdges;
   float edgesAlpha = 0.9;
-  cv::addWeighted(scaledPlusEdges, edgesAlpha, originalImage, 1.f - edgesAlpha, 0, sourcePlusEdges);
+  cv::addWeighted(scaledPlusEdges, edgesAlpha, originalImage, 1.f - edgesAlpha,
+                  0, sourcePlusEdges);
 
-  float realScale = (float) bestMatchImage->width / STORED_EDGES_WIDTH;
+  float realScale = (float)bestMatchImage->width / STORED_EDGES_WIDTH;
 
   cv::Rect roi;
   roi.x = round(bestMatch.originX * realScale);
@@ -81,7 +82,8 @@ static void redraw(int, void*) {
 
   cv::Mat out;
   float canvasAlpha = 0.6;
-  cv::addWeighted(scaledPlusCanvas, canvasAlpha, scaledImage, 1.f - canvasAlpha, 0, out);
+  cv::addWeighted(scaledPlusCanvas, canvasAlpha, scaledImage, 1.f - canvasAlpha,
+                  0, out);
 
   char text[50];
   sprintf(text, "Percentage match: %.1f%%", bestMatch.percentage * 100);
@@ -101,8 +103,8 @@ int main(int argc, const char *argv[]) {
   auto readFinish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<float> readElapsed = readFinish - readStart;
 
-  std::cout << "Loaded " << sourceImages.count() << " images from store in " <<
-    readElapsed.count() << "s\n";
+  std::cout << "Loaded " << sourceImages.count() << " images from store in "
+            << readElapsed.count() << "s\n";
 
   if (argv[2]) {
     cv::Mat templateImage = cv::imread(argv[2], cv::IMREAD_GRAYSCALE);
@@ -117,7 +119,8 @@ int main(int argc, const char *argv[]) {
 
     for (EdgedImage &sourceImage : sourceImages) {
       ImageMatch match = sourceImage.matchTo(templateImage);
-      std::cout << sourceImage.path << " match: " << (match.percentage * 100) << "%\n";
+      std::cout << sourceImage.path << " match: " << (match.percentage * 100)
+                << "%\n";
 
       if (match.percentage > bestMatch.percentage) {
         bestMatch = match;
@@ -125,7 +128,8 @@ int main(int argc, const char *argv[]) {
       }
     }
 
-    std::cout << "\nBest match is " << bestMatchImage->path << " with " << (bestMatch.percentage * 100) << "%\n";
+    std::cout << "\nBest match is " << bestMatchImage->path << " with "
+              << (bestMatch.percentage * 100) << "%\n";
 
     return 0;
   }
@@ -133,7 +137,8 @@ int main(int argc, const char *argv[]) {
   char sliderWindow[] = "Sliders";
   cv::namedWindow(sliderWindow, cv::WINDOW_AUTOSIZE);
   cv::createTrackbar("Width", sliderWindow, &width, CANVAS_WIDTH + 50, redraw);
-  cv::createTrackbar("Height", sliderWindow, &height, CANVAS_HEIGHT + 50, redraw);
+  cv::createTrackbar("Height", sliderWindow, &height, CANVAS_HEIGHT + 50,
+                     redraw);
   cv::createTrackbar("Line width", sliderWindow, &lineWidth, 50, redraw);
   cv::createTrackbar("White bias * 100", sliderWindow, &whiteBias, 100, redraw);
 
