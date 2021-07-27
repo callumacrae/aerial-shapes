@@ -38,12 +38,31 @@ void initWindow(int width, int height, const char* title) {
   //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);      // 3.0+ only
 #endif
 
+  GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
   // Create window with graphics context
-  window = glfwCreateWindow(width, height, title, NULL, NULL);
+  int attemptWidth = std::min(mode->width, width);
+  int attemptHeight = std::min(mode->height, height);
+  window = glfwCreateWindow(attemptWidth, attemptHeight, title, NULL, NULL);
+
   if (window == NULL) {
     std::cout << "Error initiating window\n";
     return;
   }
+
+  int actualWidth, actualHeight;
+  glfwGetWindowSize(window, &actualWidth, &actualHeight);
+
+  if (actualWidth < width || actualHeight < height) {
+    float scale = fmin((float)actualWidth / width, (float)actualHeight / height);
+    width *= scale;
+    height *= scale;
+  }
+
+  glfwSetWindowSize(window, width, height);
+  glfwSetWindowAspectRatio(window, width, height);
+
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1); // Enable vsync
 
@@ -70,7 +89,7 @@ void openWindow(const onFrameFn onFrame) {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    bool shouldClose = onFrame();
+    bool shouldClose = onFrame(window);
     if (shouldClose) {
       glfwSetWindowShouldClose(window, GLFW_TRUE);
       break;

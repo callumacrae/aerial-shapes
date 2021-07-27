@@ -22,12 +22,8 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
     return std::nullopt;
   }
 
-  // todo open at correct ratio
-  int windowWidth = 1280;
-  int windowHeight = 720;
-
   std::string title = std::string("Editing ") + image.path;
-  initWindow(windowWidth, windowHeight, title.c_str());
+  initWindow(sourceImage.cols, sourceImage.rows, title.c_str());
   GLuint image_tex;
 
   auto generatePreviewTexture = [&]() {
@@ -50,7 +46,7 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
 
   bool save = false;
 
-  openWindow([&]() {
+  openWindow([&](GLFWwindow* window) {
     bool changed = false;
 
     ImGui::SetNextWindowFocus();
@@ -113,8 +109,10 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
     }
 
     // Image window is full screen and non-interactive - basically, a background
-    ImGui::SetNextWindowPos(ImVec2(.0f, .0f), ImGuiCond_Once);
-    ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight), ImGuiCond_Once);
+    int actualWidth, actualHeight;
+    glfwGetWindowSize(window, &actualWidth, &actualHeight);
+    ImGui::SetNextWindowPos(ImVec2(.0f, .0f));
+    ImGui::SetNextWindowSize(ImVec2(actualWidth, actualHeight));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
     ImGui::Begin("Image", NULL, staticWindowFlags);
     ImGui::Image((void *)(intptr_t)image_tex, ImGui::GetContentRegionMax());
