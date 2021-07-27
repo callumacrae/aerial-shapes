@@ -5,35 +5,8 @@
 #include "config.h"
 
 #include "lib/detect-edge.hpp"
+#include "lib/edit-image-edges.hpp"
 #include "lib/image-list.hpp"
-
-static int blurSize = EDGE_DETECTION_BLUR_SIZE;
-static int sigmaX = EDGE_DETECTION_BLUR_SIGMA_X;
-static int sigmaY = EDGE_DETECTION_BLUR_SIGMA_Y;
-static int threshold1 = EDGE_DETECTION_CANNY_THRESHOLD_1;
-static int threshold2 = EDGE_DETECTION_CANNY_THRESHOLD_2;
-
-static cv::Mat sourceImage;
-static cv::Mat templateImage;
-
-static void redrawPreview(int, void*) {
-  if (blurSize % 2 == 0) {
-    blurSize++;
-  }
-
-  cv::Mat greyEdges = templateImage;
-  cv::Mat dilatedEdges, edges, scaledEdges, scaledPlusEdges;
-  cv::cvtColor(greyEdges, edges, cv::COLOR_GRAY2BGR);
-
-  cv::Mat mask;
-  cv::threshold(greyEdges, mask, 0, 255, cv::THRESH_BINARY);
-  edges.setTo(cv::Scalar(255, 0, 0), mask);
-
-  cv::resize(edges, scaledEdges, sourceImage.size());
-  cv::bitwise_or(scaledEdges, sourceImage, scaledPlusEdges);
-
-  cv::imshow("Preview", scaledPlusEdges);
-}
 
 int main(int argc, const char *argv[]) {
   auto readStart = std::chrono::high_resolution_clock::now();
@@ -59,8 +32,9 @@ int main(int argc, const char *argv[]) {
   }
 
   while (true) {
+    std::cout << '\n'; // This bugs out if added to the linenoise call
     std::string line;
-    auto quit = linenoise::Readline("\n> ", line);
+    auto quit = linenoise::Readline("> ", line);
 
     if (quit) {
       break;
@@ -84,18 +58,31 @@ int main(int argc, const char *argv[]) {
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    if (command == "generate") {
-      imageList.generate();
+    if (command == "generate" || command == "reset") {
+      if (command == "generate" && imageList.count() > 0) {
+        std::cerr << "Store has already been generated: use \"reset\" to reset\n";
+        continue;
+      } else if (command == "reset") {
+        std::cout << '\n';
+        std::string line;
+        auto quit = linenoise::Readline("Are you sure you wish to reset? (y/N) ", line);
 
-      auto finish = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<float> elapsed = finish - start;
-      std::cout << "Generated in " << elapsed.count() << "s\n";
-    } else if (command == "save") {
+        if (quit) {
+          break;
+        }
+
+        if (line != "y") {
+          std::cout << "Aborting reset\n";
+          continue;
+        }
+      }
+
+      imageList.generate();
       imageList.save();
 
       auto finish = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsed = finish - start;
-      std::cout << "Saved in " << elapsed.count() << "s\n";
+      std::cout << "Generated in " << elapsed.count() << "s\n";
     } else if (command == "ls") {
       std::cout << imageList.count() << " images in store:\n\n";
 
@@ -106,42 +93,32 @@ int main(int argc, const char *argv[]) {
       }
 
       std::cout << '\n';
-    } else if (command == "preview") {
+    } else if (command == "edit") {
       if (arg.empty()) {
-        std::cerr << "preview needs argument\n";
+        std::cerr << "edit needs argument\n";
         continue;
       }
 
-      EdgedImage image;
+      // todo figure out a better initialiser lol
+      std::vector<EdgedImage>::reference image = imageList.at(0);
       if (arg.find('/') != arg.npos) {
+        std::cerr << "This isn't supported yet soz\n";
       } else {
         int id = stoi(std::string(arg));
         image = imageList.at(id);
       }
 
-      std::cout << "Previewing: " << image.path << "\n";
+      std::cout << "Editing: " << image.path << "\n";
 
-      sourceImage = cv::imread(image.path);
-      templateImage = image.edgesAsMatrix();
-      
-      if (sourceImage.empty()) {
-        std::cerr << "Could not read source image\n";
-        return 1;
+      std::optional<EdgedImage> maybeEdgedImage = editImageEdges(image);
+
+      if (maybeEdgedImage.has_value()) {
+        image = maybeEdgedImage.value();
+        imageList.save();
+        std::cout << "Changes saved\n";
+      } else {
+        std::cout << "Changed discarded\n";
       }
-
-      char sliderWindow[] = "Sliders";
-      cv::namedWindow(sliderWindow, cv::WINDOW_AUTOSIZE);
-      cv::createTrackbar("Blur size", sliderWindow, &blurSize, 50, redrawPreview);
-      cv::createTrackbar("Sigma X", sliderWindow, &sigmaX, 20, redrawPreview);
-      cv::createTrackbar("Sigma Y", sliderWindow, &sigmaY, 20, redrawPreview);
-      cv::createTrackbar("Threshold 1", sliderWindow, &threshold1, 50, redrawPreview);
-      cv::createTrackbar("Threshold 2", sliderWindow, &threshold2, 50, redrawPreview);
-
-      redrawPreview(0, 0);
-
-      cv::waitKey(0);
-      cv::destroyAllWindows();
-      cv::waitKey(1); // destroyAllWindows doesn't work without this
     }
   }
 }

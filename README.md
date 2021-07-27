@@ -10,6 +10,8 @@ cmake .
 make
 ```
 
+(There's a good chance some of the dependencies will be installed already)
+
 ## To process assets
 
 Images must be processed in advance (it takes a while if you have a lot of

@@ -130,7 +130,10 @@ cv::Mat EdgedImage::edgesAsMatrix() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const EdgedImage& image) {
-    os << image.path << ',' << image.width << ',' << image.height << ','
-      << image.edges;
-    return os;
+  os << image.path << ',' << image.width << ',' << image.height << ','
+     << image.edges << ',' << image.detectionMode << ','
+     << image.detectionBlurSize << ',' << image.detectionBlurSigmaX << ','
+     << image.detectionBlurSigmaY << ',' << image.detectionCannyThreshold1
+     << ',' << image.detectionCannyThreshold2;
+  return os;
 }

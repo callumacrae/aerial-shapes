@@ -27,16 +27,48 @@ bool ImageList::getStored() {
   std::string line;
 
   while (std::getline(storeFile, line)) {
-    size_t first = line.find(',');
-    size_t second = line.find(',', first + 1);
-    size_t third = line.find(',', second + 1);
+    std::string path;
+    int width, height;
+    boost::dynamic_bitset<unsigned char> edges;
 
-    std::string path = line.substr(0, first);
-    int width = std::stoi(line.substr(first + 1, second - first - 1));
-    int height = std::stoi(line.substr(second + 1, third - second - 1));
-    boost::dynamic_bitset<unsigned char> edges(line.substr(third + 1));
+    int detectionMode, detectionBlurSize, detectionBlurSigmaX,
+        detectionBlurSigmaY, detectionCannyThreshold1, detectionCannyThreshold2;
 
-    store.emplace_back(path, width, height, edges);
+    std::stringstream lineStream(line);
+    int i = 0;
+    while (lineStream.good()) {
+      std::string substr;
+      getline(lineStream, substr, ',');
+
+      if (i == 0) {
+        path = substr;
+      } else if (i == 1) {
+        width = std::stoi(substr);
+      } else if (i == 2) {
+        height = std::stoi(substr);
+      } else if (i == 3) {
+        edges = boost::dynamic_bitset<unsigned char>(substr);
+      } else if (i == 4) {
+        detectionMode = std::stoi(substr);
+      } else if (i == 5) {
+        detectionBlurSize = std::stoi(substr);
+      } else if (i == 6) {
+        detectionBlurSigmaX = std::stoi(substr);
+      } else if (i == 7) {
+        detectionBlurSigmaY = std::stoi(substr);
+      } else if (i == 8) {
+        detectionCannyThreshold1 = std::stoi(substr);
+      } else if (i == 9) {
+        detectionCannyThreshold2 = std::stoi(substr);
+      }
+
+      ++i;
+    }
+
+    store.emplace_back(path, width, height, edges, detectionMode,
+                       detectionBlurSize, detectionBlurSigmaX,
+                       detectionBlurSigmaY, detectionCannyThreshold1,
+                       detectionCannyThreshold2);
     count_++;
   }
 
@@ -98,7 +130,7 @@ std::vector<EdgedImage>::iterator ImageList::end() {
   return store.end();
 }
 
-EdgedImage ImageList::at(size_t pos) {
+std::vector<EdgedImage>::reference ImageList::at(size_t pos) {
   return store.at(pos);
 }
 

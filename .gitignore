@@ -50,3 +50,6 @@ _deps
 
 # Assets
 assets
+
+# Imgui cache
+imgui.ini

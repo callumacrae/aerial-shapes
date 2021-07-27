@@ -26,7 +26,7 @@ public:
 
   std::vector<EdgedImage>::iterator begin();
   std::vector<EdgedImage>::iterator end();
-  EdgedImage at(size_t pos);
+  std::vector<EdgedImage>::reference at(size_t pos);
 
   int count() const;
 };

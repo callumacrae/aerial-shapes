@@ -1,3 +1,5 @@
+#pragma once
+
 #define EDGE_DETECTION_WIDTH 900
 #define STORED_EDGES_WIDTH 300
 
@@ -12,3 +14,9 @@
 
 #define OUTPUT_WIDTH 750
 #define OUTPUT_HEIGHT 500
+
+enum ImageEdgeModes {
+  ImageEdgeMode_Canny,
+  ImageEdgeMode_Threshold,
+  ImageEdgeMode_Manual
+};

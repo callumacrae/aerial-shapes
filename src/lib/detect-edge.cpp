@@ -24,16 +24,14 @@ cv::Mat detectEdges(cv::Mat &sourceImage, int blurSize, int sigmaX, int sigmaY,
   return imageResized;
 }
 
-boost::dynamic_bitset<unsigned char> detectEdgesAsBitset(cv::Mat &sourceImage) {
-  cv::Mat imageDilated = detectEdges(sourceImage);
-
-  int channels = imageDilated.channels();
+boost::dynamic_bitset<unsigned char> edgesToBitset(cv::Mat &edgeMatrix) {
+  int channels = edgeMatrix.channels();
   CV_Assert(channels == 1);
 
-  int nRows = imageDilated.rows;
-  int nCols = imageDilated.cols;
+  int nRows = edgeMatrix.rows;
+  int nCols = edgeMatrix.cols;
 
-  if (imageDilated.isContinuous()) {
+  if (edgeMatrix.isContinuous()) {
     nCols *= nRows;
     nRows = 1;
   }
@@ -42,7 +40,7 @@ boost::dynamic_bitset<unsigned char> detectEdgesAsBitset(cv::Mat &sourceImage) {
 
   int i = 0;
   for (int y = 0; y < nRows; ++y) {
-    uchar* p = imageDilated.ptr<uchar>(y);
+    uchar* p = edgeMatrix.ptr<uchar>(y);
     
     for (int x = 0; x < nCols; ++x) {
       bitset[i] = p[x] != 0;
@@ -51,4 +49,9 @@ boost::dynamic_bitset<unsigned char> detectEdgesAsBitset(cv::Mat &sourceImage) {
   }
 
   return bitset;
+}
+
+boost::dynamic_bitset<unsigned char> detectEdgesAsBitset(cv::Mat &sourceImage) {
+  cv::Mat edgeMatrix = detectEdges(sourceImage);
+  return edgesToBitset(edgeMatrix);
 }
