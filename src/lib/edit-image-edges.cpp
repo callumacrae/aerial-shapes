@@ -92,6 +92,16 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
     if (ImGui::Button("Discard")) {
       return true;
     }
+    ImGui::SameLine();
+    if (ImGui::Button("Reset")) {
+      detectionMode = ImageEdgeMode_Canny;
+      blurSize = EDGE_DETECTION_BLUR_SIZE;
+      sigmaX = EDGE_DETECTION_BLUR_SIGMA_X;
+      sigmaY = EDGE_DETECTION_BLUR_SIGMA_Y;
+      threshold1 = EDGE_DETECTION_CANNY_THRESHOLD_1;
+      threshold2 = EDGE_DETECTION_CANNY_THRESHOLD_2;
+      changed = true;
+    }
     ImGui::End();
 
     if (changed) {
