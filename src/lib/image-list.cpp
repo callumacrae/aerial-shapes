@@ -100,7 +100,8 @@ void ImageList::generate() {
       std::cout << '\n';
     }
 
-    auto edges = detectEdgesAsBitset(sourceImage);
+    auto edgesMat = detectEdgesCanny(sourceImage);
+    auto edges = edgesToBitset(edgesMat);
     store.emplace_back(file.path(), sourceImage.cols, sourceImage.rows, edges);
 
     count_++;

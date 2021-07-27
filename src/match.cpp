@@ -48,7 +48,7 @@ static void redraw(int, void*) {
     exit(1);
   }
 
-  cv::Mat greyEdges = detectEdges(originalImage);
+  cv::Mat greyEdges = detectEdgesCanny(originalImage);
   cv::Mat dilatedEdges, edges, scaledEdges, scaledPlusEdges;
   cv::cvtColor(greyEdges, edges, cv::COLOR_GRAY2BGR);
 

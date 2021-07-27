@@ -1,14 +1,22 @@
 #include "detect-edge.hpp"
 
-cv::Mat detectEdges(cv::Mat &sourceImage, int blurSize, int sigmaX, int sigmaY,
-    int threshold1, int threshold2) {
-  cv::Mat image, imageBlurred, imageCanny, imageDilated;
+static cv::Mat blurImage(cv::Mat &sourceImage, int blurSize, int sigmaX,
+                         int sigmaY) {
+  cv::Mat image, imageBlurred;
 
   int width = EDGE_DETECTION_WIDTH;
   int height = (double) sourceImage.rows / sourceImage.cols * width;
   cv::resize(sourceImage, image, { width, height });
-
   cv::GaussianBlur(image, imageBlurred, { blurSize, blurSize }, sigmaX, sigmaY);
+
+  return imageBlurred;
+}
+
+cv::Mat detectEdgesCanny(cv::Mat &sourceImage, int blurSize, int sigmaX,
+                         int sigmaY, int threshold1, int threshold2) {
+  cv::Mat imageBlurred = blurImage(sourceImage, blurSize, sigmaX, sigmaY);
+  cv::Mat imageCanny;
+
   cv::Canny(imageBlurred, imageCanny, threshold1, threshold2);
 
   cv::Mat imageResized;
@@ -49,9 +57,4 @@ boost::dynamic_bitset<unsigned char> edgesToBitset(cv::Mat &edgeMatrix) {
   }
 
   return bitset;
-}
-
-boost::dynamic_bitset<unsigned char> detectEdgesAsBitset(cv::Mat &sourceImage) {
-  cv::Mat edgeMatrix = detectEdges(sourceImage);
-  return edgesToBitset(edgeMatrix);
 }

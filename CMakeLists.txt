@@ -81,6 +81,7 @@ target_link_libraries(IMGUI PUBLIC glfw GL3W ${CMAKE_DL_LIBS})
 # IMGUI CONFIG END
 
 target_link_libraries(process_images glfw IMGUI GL3W)
+target_link_libraries(match glfw IMGUI GL3W)
 
 FetchContent_Declare(
   linenoise

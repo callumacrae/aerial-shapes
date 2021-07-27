@@ -32,7 +32,7 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
 
   auto generatePreviewTexture = [&]() {
     // todo don't run on initial run
-    templateImage = detectEdges(sourceImage, blurSize, sigmaX, sigmaY, threshold1, threshold2);
+    templateImage = detectEdgesCanny(sourceImage, blurSize, sigmaX, sigmaY, threshold1, threshold2);
 
     cv::Mat edges, mask, scaledEdges, scaledPlusEdges;
     cv::cvtColor(templateImage, edges, cv::COLOR_GRAY2BGR);
