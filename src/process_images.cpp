@@ -102,14 +102,8 @@ int main(int argc, const char *argv[]) {
         continue;
       }
 
-      // todo figure out a better initialiser lol
-      std::vector<EdgedImage>::reference image = imageList.at(0);
-      if (arg.find('/') != arg.npos) {
-        std::cerr << "This isn't supported yet soz\n";
-      } else {
-        int id = stoi(std::string(arg));
-        image = imageList.at(id);
-      }
+      int id = stoi(std::string(arg));
+      std::vector<EdgedImage>::reference image = imageList.at(id);
 
       std::cout << "Editing: " << image.path << "\n";
 
