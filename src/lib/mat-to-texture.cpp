@@ -1,6 +1,7 @@
 #include "mat-to-texture.hpp"
 
 // From https://gist.github.com/insaneyilin/038a022f2ece61c923315306ddcea081
+// With fix from https://stackoverflow.com/a/53566791
 void matToTexture(const cv::Mat &mat, GLuint* outTexture) {
   // Generate a number for our textureID's unique handle
   GLuint textureID;
@@ -16,6 +17,12 @@ void matToTexture(const cv::Mat &mat, GLuint* outTexture) {
   // Set texture clamping method
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  // Use fast 4-byte alignment (default anyway) if possible
+  glPixelStorei(GL_UNPACK_ALIGNMENT, (mat.step & 3) ? 1 : 4);
+
+  // Set length of one complete row in data (doesn't need to equal mat.cols)
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, mat.step / mat.elemSize());
 
   // Set incoming texture format to:
   // GL_BGR     for CV_CAP_OPENNI_BGR_IMAGE,
@@ -40,7 +47,7 @@ void matToTexture(const cv::Mat &mat, GLuint* outTexture) {
                0,                 // Border width in pixels (can either be 1 or 0)
                inputColourFormat, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
                GL_UNSIGNED_BYTE,  // Image data type
-               mat.ptr());        // The actual image data itself
+               mat.data);        // The actual image data itself
 
   *outTexture = textureID;
 }
