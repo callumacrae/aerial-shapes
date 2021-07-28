@@ -13,17 +13,33 @@ static cv::Mat blurImage(cv::Mat &sourceImage, int blurSize, int sigmaX,
 }
 
 cv::Mat detectEdgesCanny(cv::Mat &sourceImage, int blurSize, int sigmaX,
-                         int sigmaY, int threshold1, int threshold2) {
+                         int sigmaY, int threshold1, int threshold2,
+                         int joinByX, int joinByY) {
   cv::Mat imageBlurred = blurImage(sourceImage, blurSize, sigmaX, sigmaY);
   cv::Mat imageCanny;
 
   cv::Canny(imageBlurred, imageCanny, threshold1, threshold2);
 
-  cv::Mat imageResized;
+  if (joinByX != 0 || joinByY != 0) {
+    if (joinByX == 0) {
+      joinByX = 1;
+    } else if (joinByY == 0) {
+      joinByY = 1;
+    }
+
+    cv::Mat imageDilated;
+    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE,
+                       cv::Size(joinByX, joinByY));
+
+    cv::dilate(imageCanny, imageDilated, kernel);
+    cv::erode(imageDilated, imageCanny, kernel);
+  }
+
   if (EDGE_DETECTION_WIDTH == STORED_EDGES_WIDTH) {
     return imageCanny;
   } 
 
+  cv::Mat imageResized;
   int finalWidth = STORED_EDGES_WIDTH;
   int finalHeight = (double) sourceImage.rows / sourceImage.cols * finalWidth;
 
@@ -41,16 +57,26 @@ cv::Mat detectEdgesThreshold(cv::Mat &sourceImage, int blurSize, int sigmaX,
   cv::threshold(imageGray, imageThreshold, binaryThreshold, 255,
                 cv::THRESH_BINARY);
 
+  cv::Mat imageResized;
+  if (EDGE_DETECTION_WIDTH == STORED_EDGES_WIDTH) {
+    imageResized = imageThreshold;
+  } 
+
+  int finalWidth = STORED_EDGES_WIDTH;
+  int finalHeight = (double) sourceImage.rows / sourceImage.cols * finalWidth;
+
+  cv::resize(imageThreshold, imageResized, { finalWidth, finalHeight });
+
   std::vector<std::vector<cv::Point>> contours;
   std::vector<cv::Vec4i> hierarchy;
-  cv::findContours(imageThreshold, contours, hierarchy, cv::RETR_TREE,
+
+  cv::findContours(imageResized, contours, hierarchy, cv::RETR_TREE,
                    cv::CHAIN_APPROX_NONE);
 
-  imageThreshold.setTo(cv::Scalar::all(0));
+  imageResized.setTo(cv::Scalar::all(0));
+  cv::drawContours(imageResized, contours, -1, cv::Scalar(255));
 
-  cv::drawContours(imageThreshold, contours, -1, cv::Scalar(255), 2);
-
-  return imageThreshold;
+  return imageResized;
 }
 
 boost::dynamic_bitset<unsigned char> edgesToBitset(cv::Mat &edgeMatrix) {

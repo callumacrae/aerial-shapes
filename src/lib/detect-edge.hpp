@@ -8,7 +8,9 @@ cv::Mat detectEdgesCanny(cv::Mat &sourceImage,
     int sigmaX = EDGE_DETECTION_BLUR_SIGMA_X,
     int sigmaY = EDGE_DETECTION_BLUR_SIGMA_Y,
     int threshold1 = EDGE_DETECTION_CANNY_THRESHOLD_1,
-    int threshold2 = EDGE_DETECTION_CANNY_THRESHOLD_1);
+    int threshold2 = EDGE_DETECTION_CANNY_THRESHOLD_1,
+    int joinByX = EDGE_DETECTION_CANNY_JOIN_BY_X,
+    int joinByY = EDGE_DETECTION_CANNY_JOIN_BY_Y);
 
 cv::Mat detectEdgesThreshold(cv::Mat &sourceImage,
     int blurSize = EDGE_DETECTION_BLUR_SIZE,

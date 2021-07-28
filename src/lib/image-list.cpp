@@ -33,7 +33,7 @@ bool ImageList::getStored() {
 
     int detectionMode, detectionBlurSize, detectionBlurSigmaX,
         detectionBlurSigmaY, detectionCannyThreshold1, detectionCannyThreshold2,
-        detectionBinaryThreshold;
+        detectionCannyJoinByX, detectionCannyJoinByY, detectionBinaryThreshold;
 
     std::stringstream lineStream(line);
     int i = 0;
@@ -63,6 +63,10 @@ bool ImageList::getStored() {
         detectionCannyThreshold2 = std::stoi(substr);
       } else if (i == 10) {
         detectionBinaryThreshold = std::stoi(substr);
+      } else if (i == 11) {
+        detectionCannyJoinByX = std::stoi(substr);
+      } else if (i == 12) {
+        detectionCannyJoinByY = std::stoi(substr);
       }
 
       ++i;
@@ -71,7 +75,8 @@ bool ImageList::getStored() {
     store.emplace_back(path, width, height, edges, detectionMode,
                        detectionBlurSize, detectionBlurSigmaX,
                        detectionBlurSigmaY, detectionCannyThreshold1,
-                       detectionCannyThreshold2, detectionBinaryThreshold);
+                       detectionCannyThreshold2, detectionCannyJoinByX,
+                       detectionCannyJoinByY, detectionBinaryThreshold);
     count_++;
   }
 

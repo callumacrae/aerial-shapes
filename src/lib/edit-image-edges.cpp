@@ -13,6 +13,8 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
   int sigmaY = image.detectionBlurSigmaY;
   int threshold1 = image.detectionCannyThreshold1;
   int threshold2 = image.detectionCannyThreshold2;
+  int joinByX = image.detectionCannyJoinByX;
+  int joinByY = image.detectionCannyJoinByY;
   int binaryThreshold = image.detectionBinaryThreshold;
 
   cv::Mat sourceImage = cv::imread(image.path);
@@ -31,7 +33,8 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
     // todo don't run on initial run
     if (detectionMode == ImageEdgeMode_Canny) {
       templateImage = detectEdgesCanny(sourceImage, blurSize, sigmaX, sigmaY,
-                                       threshold1, threshold2);
+                                       threshold1, threshold2, joinByX,
+                                       joinByY);
     } else if (detectionMode == ImageEdgeMode_Threshold) {
       templateImage = detectEdgesThreshold(sourceImage, blurSize, sigmaX,
                                            sigmaY, binaryThreshold);
@@ -79,8 +82,10 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
     ImGui::NewLine();
 
     if (detectionMode == ImageEdgeMode_Canny) {
-      changed |= ImGui::SliderInt("Canny threshold 1", &threshold1, 0, 50);
-      changed |= ImGui::SliderInt("Canny threshold 2", &threshold2, 0, 50);
+      changed |= ImGui::SliderInt("Canny threshold 1", &threshold1, 0, 255);
+      changed |= ImGui::SliderInt("Canny threshold 2", &threshold2, 0, 255);
+      changed |= ImGui::SliderInt("Join by x", &joinByX, 0, 39);
+      changed |= ImGui::SliderInt("Join by y", &joinByY, 0, 39);
     } else if (detectionMode == ImageEdgeMode_Threshold) {
       changed |= ImGui::SliderInt("Binary threshold", &binaryThreshold, 0, 255);
     } else {
@@ -105,6 +110,8 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
       sigmaY = EDGE_DETECTION_BLUR_SIGMA_Y;
       threshold1 = EDGE_DETECTION_CANNY_THRESHOLD_1;
       threshold2 = EDGE_DETECTION_CANNY_THRESHOLD_2;
+      joinByX = EDGE_DETECTION_CANNY_JOIN_BY_X;
+      joinByY = EDGE_DETECTION_CANNY_JOIN_BY_Y;
       binaryThreshold = EDGE_DETECTION_BINARY_THRESHOLD;
       changed = true;
     }
@@ -113,6 +120,14 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
     if (changed) {
       if (blurSize % 2 == 0) {
         blurSize++;
+      }
+
+      if (joinByX != 0 && joinByX % 2 == 0) {
+        joinByX++;
+      }
+
+      if (joinByY != 0 && joinByY % 2 == 0) {
+        joinByY++;
       }
 
       generatePreviewTexture();
@@ -140,7 +155,7 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
 
   auto edges = edgesToBitset(templateImage);
   return EdgedImage(image.path, image.width, image.height, edges, detectionMode,
-                    blurSize, sigmaX, sigmaY, threshold1, threshold2,
-                    binaryThreshold);
+                    blurSize, sigmaX, sigmaY, threshold1, threshold2, joinByX,
+                    joinByY, binaryThreshold);
 }
 
