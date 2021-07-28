@@ -107,10 +107,10 @@ int main(int argc, const char *argv[]) {
 
       std::cout << "Editing: " << image.path << "\n";
 
-      std::optional<EdgedImage> maybeEdgedImage = editImageEdges(image);
+      std::optional<EdgedImage> maybeNewImage = editImageEdges(image);
 
-      if (maybeEdgedImage.has_value()) {
-        image = maybeEdgedImage.value();
+      if (maybeNewImage.has_value()) {
+        image = maybeNewImage.value();
         imageList.save();
         std::cout << "Changes saved\n";
       } else {

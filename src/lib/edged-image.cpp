@@ -134,6 +134,7 @@ std::ostream& operator<<(std::ostream& os, const EdgedImage& image) {
      << image.edges << ',' << image.detectionMode << ','
      << image.detectionBlurSize << ',' << image.detectionBlurSigmaX << ','
      << image.detectionBlurSigmaY << ',' << image.detectionCannyThreshold1
-     << ',' << image.detectionCannyThreshold2;
+     << ',' << image.detectionCannyThreshold2 << ','
+     << image.detectionBinaryThreshold;
   return os;
 }

@@ -13,6 +13,7 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
   int sigmaY = image.detectionBlurSigmaY;
   int threshold1 = image.detectionCannyThreshold1;
   int threshold2 = image.detectionCannyThreshold2;
+  int binaryThreshold = image.detectionBinaryThreshold;
 
   cv::Mat sourceImage = cv::imread(image.path);
   cv::Mat templateImage = image.edgesAsMatrix();
@@ -28,7 +29,15 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
 
   auto generatePreviewTexture = [&]() {
     // todo don't run on initial run
-    templateImage = detectEdgesCanny(sourceImage, blurSize, sigmaX, sigmaY, threshold1, threshold2);
+    if (detectionMode == ImageEdgeMode_Canny) {
+      templateImage = detectEdgesCanny(sourceImage, blurSize, sigmaX, sigmaY,
+                                       threshold1, threshold2);
+    } else if (detectionMode == ImageEdgeMode_Threshold) {
+      templateImage = detectEdgesThreshold(sourceImage, blurSize, sigmaX,
+                                           sigmaY, binaryThreshold);
+    } else {
+      std::cerr << "This isn't supported yet\n";
+    }
 
     cv::Mat edges, mask, scaledEdges, scaledPlusEdges;
     cv::cvtColor(templateImage, edges, cv::COLOR_GRAY2BGR);
@@ -73,7 +82,7 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
       changed |= ImGui::SliderInt("Canny threshold 1", &threshold1, 0, 50);
       changed |= ImGui::SliderInt("Canny threshold 2", &threshold2, 0, 50);
     } else if (detectionMode == ImageEdgeMode_Threshold) {
-      ImGui::Text("Threshold mode not supported yet");
+      changed |= ImGui::SliderInt("Binary threshold", &binaryThreshold, 0, 255);
     } else {
       ImGui::Text("Filler text for manual mode");
     }
@@ -96,6 +105,7 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
       sigmaY = EDGE_DETECTION_BLUR_SIGMA_Y;
       threshold1 = EDGE_DETECTION_CANNY_THRESHOLD_1;
       threshold2 = EDGE_DETECTION_CANNY_THRESHOLD_2;
+      binaryThreshold = EDGE_DETECTION_BINARY_THRESHOLD;
       changed = true;
     }
     ImGui::End();
@@ -130,6 +140,7 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
 
   auto edges = edgesToBitset(templateImage);
   return EdgedImage(image.path, image.width, image.height, edges, detectionMode,
-                    blurSize, sigmaX, sigmaY, threshold1, threshold2);
+                    blurSize, sigmaX, sigmaY, threshold1, threshold2,
+                    binaryThreshold);
 }
 

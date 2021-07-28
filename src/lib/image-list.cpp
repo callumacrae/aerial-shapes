@@ -32,7 +32,8 @@ bool ImageList::getStored() {
     boost::dynamic_bitset<unsigned char> edges;
 
     int detectionMode, detectionBlurSize, detectionBlurSigmaX,
-        detectionBlurSigmaY, detectionCannyThreshold1, detectionCannyThreshold2;
+        detectionBlurSigmaY, detectionCannyThreshold1, detectionCannyThreshold2,
+        detectionBinaryThreshold;
 
     std::stringstream lineStream(line);
     int i = 0;
@@ -60,6 +61,8 @@ bool ImageList::getStored() {
         detectionCannyThreshold1 = std::stoi(substr);
       } else if (i == 9) {
         detectionCannyThreshold2 = std::stoi(substr);
+      } else if (i == 10) {
+        detectionBinaryThreshold = std::stoi(substr);
       }
 
       ++i;
@@ -68,7 +71,7 @@ bool ImageList::getStored() {
     store.emplace_back(path, width, height, edges, detectionMode,
                        detectionBlurSize, detectionBlurSigmaX,
                        detectionBlurSigmaY, detectionCannyThreshold1,
-                       detectionCannyThreshold2);
+                       detectionCannyThreshold2, detectionBinaryThreshold);
     count_++;
   }
 

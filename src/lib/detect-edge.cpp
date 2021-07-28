@@ -32,6 +32,27 @@ cv::Mat detectEdgesCanny(cv::Mat &sourceImage, int blurSize, int sigmaX,
   return imageResized;
 }
 
+cv::Mat detectEdgesThreshold(cv::Mat &sourceImage, int blurSize, int sigmaX,
+                             int sigmaY, int binaryThreshold) {
+  cv::Mat imageBlurred = blurImage(sourceImage, blurSize, sigmaX, sigmaY);
+  cv::Mat imageGray, imageThreshold;
+
+  cv::cvtColor(imageBlurred, imageGray, cv::COLOR_BGR2GRAY);
+  cv::threshold(imageGray, imageThreshold, binaryThreshold, 255,
+                cv::THRESH_BINARY);
+
+  std::vector<std::vector<cv::Point>> contours;
+  std::vector<cv::Vec4i> hierarchy;
+  cv::findContours(imageThreshold, contours, hierarchy, cv::RETR_TREE,
+                   cv::CHAIN_APPROX_NONE);
+
+  imageThreshold.setTo(cv::Scalar::all(0));
+
+  cv::drawContours(imageThreshold, contours, -1, cv::Scalar(255), 2);
+
+  return imageThreshold;
+}
+
 boost::dynamic_bitset<unsigned char> edgesToBitset(cv::Mat &edgeMatrix) {
   int channels = edgeMatrix.channels();
   CV_Assert(channels == 1);

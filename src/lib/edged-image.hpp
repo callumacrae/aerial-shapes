@@ -22,7 +22,8 @@ public:
   bitset edges;
 
   int detectionMode, detectionBlurSize, detectionBlurSigmaX,
-      detectionBlurSigmaY, detectionCannyThreshold1, detectionCannyThreshold2;
+      detectionBlurSigmaY, detectionCannyThreshold1, detectionCannyThreshold2,
+      detectionBinaryThreshold;
 
   EdgedImage() {}
   EdgedImage(std::string path, int width, int height, bitset &edges,
@@ -31,13 +32,15 @@ public:
              int detectionBlurSigmaX = EDGE_DETECTION_BLUR_SIGMA_X,
              int detectionBlurSigmaY = EDGE_DETECTION_BLUR_SIGMA_Y,
              int detectionCannyThreshold1 = EDGE_DETECTION_CANNY_THRESHOLD_1,
-             int detectionCannyThreshold2 = EDGE_DETECTION_CANNY_THRESHOLD_2)
+             int detectionCannyThreshold2 = EDGE_DETECTION_CANNY_THRESHOLD_2,
+             int detectionBinaryThreshold = EDGE_DETECTION_BINARY_THRESHOLD)
       : path(path), width(width), height(height), edges(edges),
         detectionMode(detectionMode), detectionBlurSize(detectionBlurSize),
         detectionBlurSigmaX(detectionBlurSigmaX),
         detectionBlurSigmaY(detectionBlurSigmaY),
         detectionCannyThreshold1(detectionCannyThreshold1),
-        detectionCannyThreshold2(detectionCannyThreshold2) {}
+        detectionCannyThreshold2(detectionCannyThreshold2),
+        detectionBinaryThreshold(detectionBinaryThreshold) {}
 
   ImageMatch matchTo(const cv::Mat &templateImage, float whiteBias = 0.75) const;
   cv::Mat edgesAsMatrix() const;
