@@ -2,10 +2,6 @@
 
 #include "edit-image-edges.hpp"
 
-static const ImGuiWindowFlags staticWindowFlags =
-    ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |
-    ImGuiWindowFlags_NoSavedSettings;
-
 std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
   int detectionMode = image.detectionMode;
   int blurSize = image.detectionBlurSize;
@@ -17,7 +13,7 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
   int joinByY = image.detectionCannyJoinByY;
   int binaryThreshold = image.detectionBinaryThreshold;
 
-  cv::Mat sourceImage = cv::imread(image.path);
+  const cv::Mat sourceImage = cv::imread(image.path);
   cv::Mat templateImage = image.edgesAsMatrix();
 
   if (sourceImage.empty()) {

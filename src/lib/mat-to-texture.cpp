@@ -19,7 +19,7 @@ void matToTexture(const cv::Mat &mat, GLuint* outTexture) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   // Use fast 4-byte alignment (default anyway) if possible
-  glPixelStorei(GL_UNPACK_ALIGNMENT, (mat.step & 3) ? 1 : 4);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, (mat.cols % 4 == 0) ? 4 : 1);
 
   // Set length of one complete row in data (doesn't need to equal mat.cols)
   glPixelStorei(GL_UNPACK_ROW_LENGTH, mat.step / mat.elemSize());

@@ -1,6 +1,6 @@
 #include "detect-edge.hpp"
 
-static cv::Mat blurImage(cv::Mat &sourceImage, int blurSize, int sigmaX,
+static cv::Mat blurImage(const cv::Mat &sourceImage, int blurSize, int sigmaX,
                          int sigmaY) {
   cv::Mat image, imageBlurred;
 
@@ -12,7 +12,7 @@ static cv::Mat blurImage(cv::Mat &sourceImage, int blurSize, int sigmaX,
   return imageBlurred;
 }
 
-cv::Mat detectEdgesCanny(cv::Mat &sourceImage, int blurSize, int sigmaX,
+cv::Mat detectEdgesCanny(const cv::Mat &sourceImage, int blurSize, int sigmaX,
                          int sigmaY, int threshold1, int threshold2,
                          int joinByX, int joinByY) {
   cv::Mat imageBlurred = blurImage(sourceImage, blurSize, sigmaX, sigmaY);
@@ -48,7 +48,7 @@ cv::Mat detectEdgesCanny(cv::Mat &sourceImage, int blurSize, int sigmaX,
   return imageResized;
 }
 
-cv::Mat detectEdgesThreshold(cv::Mat &sourceImage, int blurSize, int sigmaX,
+cv::Mat detectEdgesThreshold(const cv::Mat &sourceImage, int blurSize, int sigmaX,
                              int sigmaY, int binaryThreshold) {
   cv::Mat imageBlurred = blurImage(sourceImage, blurSize, sigmaX, sigmaY);
   cv::Mat imageGray, imageThreshold;

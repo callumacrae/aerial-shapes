@@ -114,7 +114,7 @@ int main(int argc, const char *argv[]) {
         imageList.save();
         std::cout << "Changes saved\n";
       } else {
-        std::cout << "Changed discarded\n";
+        std::cout << "Changes discarded\n";
       }
     }
   }

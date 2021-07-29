@@ -3,7 +3,7 @@
 #include "../precompiled.h"
 #include "../config.h"
 
-cv::Mat detectEdgesCanny(cv::Mat &sourceImage,
+cv::Mat detectEdgesCanny(const cv::Mat &sourceImage,
     int blurSize = EDGE_DETECTION_BLUR_SIZE,
     int sigmaX = EDGE_DETECTION_BLUR_SIGMA_X,
     int sigmaY = EDGE_DETECTION_BLUR_SIGMA_Y,
@@ -12,7 +12,7 @@ cv::Mat detectEdgesCanny(cv::Mat &sourceImage,
     int joinByX = EDGE_DETECTION_CANNY_JOIN_BY_X,
     int joinByY = EDGE_DETECTION_CANNY_JOIN_BY_Y);
 
-cv::Mat detectEdgesThreshold(cv::Mat &sourceImage,
+cv::Mat detectEdgesThreshold(const cv::Mat &sourceImage,
     int blurSize = EDGE_DETECTION_BLUR_SIZE,
     int sigmaX = EDGE_DETECTION_BLUR_SIGMA_X,
     int sigmaY = EDGE_DETECTION_BLUR_SIGMA_Y,
