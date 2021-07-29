@@ -16,7 +16,14 @@ int main(int argc, const char *argv[]) {
   int width = 100;
   int height = 550;
   int lineWidth = 4;
-  float whiteBias = 0.75;
+
+  float offsetScaleStep = MATCH_OFFSET_SCALE_STEP;
+  int offsetXStep = MATCH_OFFSET_X_STEP;
+  int offsetYStep = MATCH_OFFSET_Y_STEP;
+
+  float minOffsetScale = MATCH_MIN_OFFSET_SCALE;
+  int maxOffset = MATCH_MAX_OFFSET;
+  float whiteBias = MATCH_WHITE_BIAS;
 
   auto readFinish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<float> readElapsed = readFinish - readStart;
@@ -33,17 +40,18 @@ int main(int argc, const char *argv[]) {
     }
 
     ImageMatch bestMatch;
-    EdgedImage *bestMatchImage = nullptr;
+    // Warning: sourceImages is managing this memory
+    EdgedImage *bestMatchImage;
 
-    for (EdgedImage &sourceImage : sourceImages) {
+    for (std::shared_ptr<EdgedImage> &sourceImage : sourceImages) {
       ImageMatch match;
-      sourceImage.matchTo(templateImage, &match);
-      std::cout << sourceImage.path << " match: " << (match.percentage * 100)
+      sourceImage->matchTo(templateImage, &match);
+      std::cout << sourceImage->path << " match: " << (match.percentage * 100)
                 << "%\n";
 
       if (match.percentage > bestMatch.percentage) {
         bestMatch = match;
-        bestMatchImage = &sourceImage;
+        bestMatchImage = sourceImage.get();
       }
     }
 
@@ -57,7 +65,8 @@ int main(int argc, const char *argv[]) {
   GLuint image_tex;
 
   ImageMatch bestMatch;
-  EdgedImage *bestMatchImage = nullptr;
+  // Warning: sourceImages is managing this memory
+  EdgedImage *bestMatchImage;
   int runs;
 
   auto generatePreviewTexture = [&]() {
@@ -74,12 +83,14 @@ int main(int argc, const char *argv[]) {
     bestMatchImage = nullptr;
     runs = 0;
 
-    for (EdgedImage &sourceImage : sourceImages) {
+    for (std::shared_ptr<EdgedImage> &sourceImage : sourceImages) {
       ImageMatch match;
-      runs += sourceImage.matchTo(greyCanvas, &match, whiteBias);
+      runs += sourceImage->matchTo(greyCanvas, &match, offsetScaleStep,
+                                  offsetXStep, offsetYStep, minOffsetScale,
+                                  maxOffset, whiteBias);
       if (match.percentage > bestMatch.percentage) {
         bestMatch = match;
-        bestMatchImage = &sourceImage;
+        bestMatchImage = sourceImage.get();
       }
     }
 
@@ -141,6 +152,14 @@ int main(int argc, const char *argv[]) {
     changed |= ImGui::SliderInt("Width", &width, 0, CANVAS_WIDTH + 50);
     changed |= ImGui::SliderInt("Height", &height, 0, CANVAS_HEIGHT + 50);
     changed |= ImGui::SliderInt("Line width", &lineWidth, 0, 50);
+
+    ImGui::NewLine();
+
+    changed |= ImGui::SliderFloat("Offset scale step", &offsetScaleStep, 0.05, 0.5);
+    changed |= ImGui::SliderInt("Offset x step", &offsetXStep, 1, 20);
+    changed |= ImGui::SliderInt("Offset y step", &offsetYStep, 1, 20);
+    changed |= ImGui::SliderFloat("Min offset scale", &minOffsetScale, 0, 0.9);
+    changed |= ImGui::SliderInt("Max offset", &maxOffset, 1, 50);
     changed |= ImGui::SliderFloat("White bias", &whiteBias, 0, 1);
 
     ImGui::NewLine();

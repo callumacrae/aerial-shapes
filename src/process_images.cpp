@@ -89,9 +89,9 @@ int main(int argc, const char *argv[]) {
       std::cout << imageList.count() << " images in store:\n\n";
 
       int i = 0;
-      for (const EdgedImage &image : imageList) {
-        std::cout << i << ": " << image.path << " (" << image.width << "x"
-                  << image.height << ")\n";
+      for (const std::shared_ptr<EdgedImage> &image : imageList) {
+        std::cout << i << ": " << image->path << " (" << image->width << "x"
+                  << image->height << ")\n";
         i++;
       }
 
@@ -103,14 +103,14 @@ int main(int argc, const char *argv[]) {
       }
 
       int id = stoi(std::string(arg));
-      std::vector<EdgedImage>::reference image = imageList.at(id);
+      ImageList::ImageStore::reference image = imageList.at(id);
 
-      std::cout << "Editing: " << image.path << "\n";
+      std::cout << "Editing: " << image->path << "\n";
 
-      std::optional<EdgedImage> maybeNewImage = editImageEdges(image);
+      std::optional<EdgedImage*> maybeNewImage = editImageEdges(*image);
 
       if (maybeNewImage.has_value()) {
-        image = maybeNewImage.value();
+        image = std::shared_ptr<EdgedImage>(maybeNewImage.value());
         imageList.save();
         std::cout << "Changes saved\n";
       } else {

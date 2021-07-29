@@ -1,7 +1,5 @@
 #include "image-list.hpp"
 
-ImageList::ImageList() {};
-
 ImageList::ImageList(std::string dirPath) : dirPath(dirPath) {
   namespace fs = std::filesystem;
 
@@ -72,12 +70,11 @@ bool ImageList::getStored() {
       ++i;
     }
 
-    store.emplace_back(path, width, height, edges, detectionMode,
-                       detectionBlurSize, detectionBlurSigmaX,
-                       detectionBlurSigmaY, detectionCannyThreshold1,
-                       detectionCannyThreshold2, detectionCannyJoinByX,
-                       detectionCannyJoinByY, detectionBinaryThreshold);
-    count_++;
+    store.push_back(std::make_shared<EdgedImage>(
+        path, width, height, edges, detectionMode, detectionBlurSize,
+        detectionBlurSigmaX, detectionBlurSigmaY, detectionCannyThreshold1,
+        detectionCannyThreshold2, detectionCannyJoinByX, detectionCannyJoinByY,
+        detectionBinaryThreshold));
   }
 
   storeFile.close();
@@ -89,7 +86,6 @@ void ImageList::generate() {
   namespace fs = std::filesystem;
   
   store.clear();
-  count_ = 0;
 
   for (const auto &file : fs::directory_iterator(dirPath)) {
     if (std::string(file.path().filename())[0] == '.') {
@@ -110,9 +106,8 @@ void ImageList::generate() {
 
     auto edgesMat = detectEdgesCanny(sourceImage);
     auto edges = edgesToBitset(edgesMat);
-    store.emplace_back(file.path(), sourceImage.cols, sourceImage.rows, edges);
-
-    count_++;
+    store.push_back(std::make_shared<EdgedImage>(file.path(), sourceImage.cols,
+                                                 sourceImage.rows, edges));
   }
 }
 
@@ -125,24 +120,24 @@ void ImageList::save() {
     exit(1);
   }
 
-  for (const EdgedImage &image : store) {
-    storeFile << image << '\n';
+  for (const std::shared_ptr<EdgedImage> &image : store) {
+    storeFile << *image << '\n';
   }
 }
 
 // @todo is there a nicer way to do this?
-std::vector<EdgedImage>::iterator ImageList::begin() {
+ImageList::ImageStore::iterator ImageList::begin() {
   return store.begin();
 }
 
-std::vector<EdgedImage>::iterator ImageList::end() {
+ImageList::ImageStore::iterator ImageList::end() {
   return store.end();
 }
 
-std::vector<EdgedImage>::reference ImageList::at(size_t pos) {
+ImageList::ImageStore::reference ImageList::at(size_t pos) {
   return store.at(pos);
 }
 
 int ImageList::count() const {
-  return count_;
+  return store.size();
 }

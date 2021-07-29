@@ -48,7 +48,12 @@ public:
         detectionBinaryThreshold(detectionBinaryThreshold) {}
 
   int matchTo(const cv::Mat &templateImage, ImageMatch *match,
-              float whiteBias = 0.75) const;
+              float offsetScaleStep = MATCH_OFFSET_SCALE_STEP,
+              int offsetXStep = MATCH_OFFSET_X_STEP,
+              int offsetYStep = MATCH_OFFSET_Y_STEP,
+              float minOffsetScale = MATCH_MIN_OFFSET_SCALE,
+              int maxOffset = MATCH_MAX_OFFSET,
+              float whiteBias = MATCH_WHITE_BIAS) const;
   cv::Mat edgesAsMatrix() const;
 
   friend std::ostream& operator<<(std::ostream& os, const EdgedImage& image);

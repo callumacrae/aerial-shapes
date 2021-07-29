@@ -2,7 +2,7 @@
 
 #include "edit-image-edges.hpp"
 
-std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
+std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
   int detectionMode = image.detectionMode;
   int blurSize = image.detectionBlurSize;
   int sigmaX = image.detectionBlurSigmaX;
@@ -150,8 +150,8 @@ std::optional<EdgedImage> editImageEdges(EdgedImage &image) {
   }
 
   auto edges = edgesToBitset(templateImage);
-  return EdgedImage(image.path, image.width, image.height, edges, detectionMode,
-                    blurSize, sigmaX, sigmaY, threshold1, threshold2, joinByX,
-                    joinByY, binaryThreshold);
+  return new EdgedImage(image.path, image.width, image.height, edges,
+                        detectionMode, blurSize, sigmaX, sigmaY, threshold1,
+                        threshold2, joinByX, joinByY, binaryThreshold);
 }
 

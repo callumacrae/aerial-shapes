@@ -8,4 +8,4 @@
 #include "mat-to-texture.hpp"
 #include "window.hpp"
 
-std::optional<EdgedImage> editImageEdges(EdgedImage &image);
+std::optional<EdgedImage*> editImageEdges(EdgedImage &image);

@@ -1,7 +1,10 @@
 #include "edged-image.hpp"
 
-// whiteBias can be hardcoded once i've figured out what it should be
-int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match, float whiteBias) const {
+// these vars can probs be hardcoded once i've figured out what it should be
+int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
+                        float offsetScaleStep, int offsetXStep, int offsetYStep,
+                        float minOffsetScale, int maxOffset,
+                        float whiteBias) const {
   int channels = templateImage.channels();
   CV_Assert(channels == 1);
 
@@ -13,12 +16,7 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match, float w
 
   ImageMatch bestMatch;
 
-  float offsetScaleStep = 0.1;
-  int offsetXStep = 5;
-  int offsetYStep = 5;
-
-  float minOffsetScale = fmax(0.4, (float) CANVAS_WIDTH / width);
-  int maxOffset = 15;
+  minOffsetScale = fmax(minOffsetScale, (float) OUTPUT_WIDTH / width);
 
   int runs = 0;
 
