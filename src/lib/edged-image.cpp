@@ -1,7 +1,7 @@
 #include "edged-image.hpp"
 
 // whiteBias can be hardcoded once i've figured out what it should be
-ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) const {
+int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match, float whiteBias) const {
   int channels = templateImage.channels();
   CV_Assert(channels == 1);
 
@@ -48,7 +48,9 @@ ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) co
           for (int offsetYMultiplier = -1; offsetYMultiplier <= 1; offsetYMultiplier += 2) {
             int offsetY = offsetYRoot * offsetYMultiplier;
 
-            ImageMatch match = matchToStep(templateImage, scale, originX + offsetX, originY + offsetY, whiteBias);
+            ImageMatch match;
+            matchToStep(templateImage, &match, scale, originX + offsetX,
+                        originY + offsetY, whiteBias);
             runs++;
 
             if (match.percentage > bestMatch.percentage) {
@@ -69,12 +71,11 @@ ImageMatch EdgedImage::matchTo(const cv::Mat &templateImage, float whiteBias) co
     }
   }
 
-  std::cout << "Runs: " << runs << '\n';
-
-  return bestMatch;
+  *match = bestMatch;
+  return runs;
 }
 
-ImageMatch EdgedImage::matchToStep(const cv::Mat &templateImage,
+void EdgedImage::matchToStep(const cv::Mat &templateImage, ImageMatch *match,
     float scale, int originX, int originY, float whiteBias) const {
   int testedBlack = 0;
   int matchingBlack = 0;
@@ -109,7 +110,7 @@ ImageMatch EdgedImage::matchToStep(const cv::Mat &templateImage,
   float percentageBlack = (float) matchingBlack / testedBlack;
   float percentageWhite = (float) matchingWhite / testedWhite;
   float percentage = percentageWhite * whiteBias + percentageBlack * (1 - whiteBias);
-  return ImageMatch{percentage, scale, originX, originY};
+  *match = ImageMatch{percentage, scale, originX, originY};
 }
 
 cv::Mat EdgedImage::edgesAsMatrix() const {

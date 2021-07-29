@@ -36,7 +36,8 @@ int main(int argc, const char *argv[]) {
     EdgedImage *bestMatchImage = nullptr;
 
     for (EdgedImage &sourceImage : sourceImages) {
-      ImageMatch match = sourceImage.matchTo(templateImage);
+      ImageMatch match;
+      sourceImage.matchTo(templateImage, &match);
       std::cout << sourceImage.path << " match: " << (match.percentage * 100)
                 << "%\n";
 
@@ -57,6 +58,7 @@ int main(int argc, const char *argv[]) {
 
   ImageMatch bestMatch;
   EdgedImage *bestMatchImage = nullptr;
+  int runs;
 
   auto generatePreviewTexture = [&]() {
     cv::Mat canvas = cv::Mat::zeros(CANVAS_HEIGHT, CANVAS_WIDTH, CV_8UC3);
@@ -70,9 +72,11 @@ int main(int argc, const char *argv[]) {
 
     bestMatch = ImageMatch();
     bestMatchImage = nullptr;
+    runs = 0;
 
     for (EdgedImage &sourceImage : sourceImages) {
-      ImageMatch match = sourceImage.matchTo(greyCanvas, whiteBias);
+      ImageMatch match;
+      runs += sourceImage.matchTo(greyCanvas, &match, whiteBias);
       if (match.percentage > bestMatch.percentage) {
         bestMatch = match;
         bestMatchImage = &sourceImage;
@@ -151,6 +155,7 @@ int main(int argc, const char *argv[]) {
       ImGui::Text("%% match: %.1f%%", bestMatch.percentage * 100);
       ImGui::Text("Scale: %.2f", bestMatch.scale);
       ImGui::Text("Offset: (%i,%i)", bestMatch.originX, bestMatch.originY);
+      ImGui::Text("Runs: %i", runs);
       ImGui::TreePop();
     }
 

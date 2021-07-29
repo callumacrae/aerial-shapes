@@ -13,7 +13,8 @@ struct ImageMatch {
 class EdgedImage {
   using bitset = boost::dynamic_bitset<unsigned char>;
 
-  ImageMatch matchToStep(const cv::Mat &templateImage, float scale, int originX, int originY, float whiteBias = 0.75) const;
+  void matchToStep(const cv::Mat &templateImage, ImageMatch *match, float scale,
+                  int originX, int originY, float whiteBias = 0.75) const;
 
   // @todo make this a bit more classey
 public:
@@ -46,7 +47,8 @@ public:
         detectionCannyJoinByY(detectionCannyJoinByY),
         detectionBinaryThreshold(detectionBinaryThreshold) {}
 
-  ImageMatch matchTo(const cv::Mat &templateImage, float whiteBias = 0.75) const;
+  int matchTo(const cv::Mat &templateImage, ImageMatch *match,
+              float whiteBias = 0.75) const;
   cv::Mat edgesAsMatrix() const;
 
   friend std::ostream& operator<<(std::ostream& os, const EdgedImage& image);
