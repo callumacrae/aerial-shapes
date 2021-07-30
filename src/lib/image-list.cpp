@@ -125,6 +125,20 @@ void ImageList::save() {
   }
 }
 
+void ImageList::sortBy(const ImageList::sort_predicate &sortFn) {
+  std::sort(store.begin(), store.end(), sortFn);
+}
+void ImageList::sortBy(const char* sorter) {
+  if (strcmp(sorter, "match-percentage") == 0) {
+    sortBy([](std::shared_ptr<EdgedImage> a,
+              std::shared_ptr<EdgedImage> b) -> bool {
+      return a->lastMatch.percentage > b->lastMatch.percentage;
+    });
+  } else {
+    throw std::runtime_error("Invalid sorter specified");
+  }
+}
+
 // @todo is there a nicer way to do this?
 ImageList::ImageStore::iterator ImageList::begin() {
   return store.begin();

@@ -4,7 +4,7 @@
 int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
                         float offsetScaleStep, int offsetXStep, int offsetYStep,
                         float minOffsetScale, int maxOffset,
-                        float whiteBias) const {
+                        float whiteBias) {
   int channels = templateImage.channels();
   CV_Assert(channels == 1);
 
@@ -70,6 +70,7 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
   }
 
   *match = bestMatch;
+  lastMatch = bestMatch; // Have to copy here or can cause segfaults
   return runs;
 }
 

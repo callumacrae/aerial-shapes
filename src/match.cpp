@@ -11,7 +11,9 @@
 int main(int argc, const char *argv[]) {
   auto readStart = std::chrono::high_resolution_clock::now();
 
+  // todo sort alphabetically
   ImageList sourceImages = ImageList(argv[1]);
+  ImageList orderedImages = sourceImages;
 
   int width = 100;
   int height = 550;
@@ -94,6 +96,8 @@ int main(int argc, const char *argv[]) {
       }
     }
 
+    orderedImages.sortBy("match-percentage");
+
     cv::Mat originalImage = cv::imread(bestMatchImage->path);
 
     if (originalImage.empty()) {
@@ -164,9 +168,9 @@ int main(int argc, const char *argv[]) {
 
     ImGui::NewLine();
 
-    if (ImGui::TreeNode("Match info")) {
-      float child_height = ImGui::GetTextLineHeight();
+    float child_height = ImGui::GetTextLineHeight();
 
+    if (ImGui::TreeNode("Best match info")) {
       if (ImGui::BeginChild("path", ImVec2(0, child_height))) {
         ImGui::Text("Best match: %s", bestMatchImage->path.c_str());
       }
@@ -175,6 +179,16 @@ int main(int argc, const char *argv[]) {
       ImGui::Text("Scale: %.2f", bestMatch.scale);
       ImGui::Text("Offset: (%i,%i)", bestMatch.originX, bestMatch.originY);
       ImGui::Text("Runs: %i", runs);
+      ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("All matches")) {
+      if (ImGui::BeginChild("matches")) {
+        for (auto &image : orderedImages) {
+          ImGui::Text("%.1f%%: %s", image->lastMatch.percentage * 100, image->path.c_str());
+        }
+      }
+      ImGui::EndChild();
       ImGui::TreePop();
     }
 

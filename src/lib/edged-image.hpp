@@ -26,6 +26,8 @@ public:
       detectionBlurSigmaY, detectionCannyThreshold1, detectionCannyThreshold2,
       detectionCannyJoinByX, detectionCannyJoinByY,detectionBinaryThreshold;
 
+  ImageMatch lastMatch;
+
   EdgedImage() {}
   EdgedImage(std::string path, int width, int height, bitset &edges,
              int detectionMode = ImageEdgeMode_Canny,
@@ -53,7 +55,7 @@ public:
               int offsetYStep = MATCH_OFFSET_Y_STEP,
               float minOffsetScale = MATCH_MIN_OFFSET_SCALE,
               int maxOffset = MATCH_MAX_OFFSET,
-              float whiteBias = MATCH_WHITE_BIAS) const;
+              float whiteBias = MATCH_WHITE_BIAS);
   cv::Mat edgesAsMatrix() const;
 
   friend std::ostream& operator<<(std::ostream& os, const EdgedImage& image);
