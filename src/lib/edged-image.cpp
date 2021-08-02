@@ -16,7 +16,7 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
 
   ImageMatch bestMatch;
 
-  minOffsetScale = fmax(minOffsetScale, (float) OUTPUT_WIDTH / width);
+  minOffsetScale = fmax(minOffsetScale, (float) OUTPUT_WIDTH / width * 2);
 
   int runs = 0;
 

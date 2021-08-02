@@ -17,7 +17,8 @@ int main(int argc, const char *argv[]) {
 
   int width = 100;
   int height = 550;
-  int lineWidth = 4;
+  // Algorithm is flawed: it'll probably zoom all the way in if lineWidth > 1
+  int lineWidth = 1;
 
   float offsetScaleStep = MATCH_OFFSET_SCALE_STEP;
   int offsetXStep = MATCH_OFFSET_X_STEP;
@@ -176,7 +177,7 @@ int main(int argc, const char *argv[]) {
 
     changed |= ImGui::SliderInt("Width", &width, 0, CANVAS_WIDTH + 50);
     changed |= ImGui::SliderInt("Height", &height, 0, CANVAS_HEIGHT + 50);
-    changed |= ImGui::SliderInt("Line width", &lineWidth, 0, 50);
+    /* changed |= ImGui::SliderInt("Line width", &lineWidth, 0, 50); */
 
     ImGui::NewLine();
 
