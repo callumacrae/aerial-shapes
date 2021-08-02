@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>
+#include <stdio.h>
 #include <string>
 
 #include <boost/dynamic_bitset.hpp>

@@ -37,8 +37,7 @@ int main(int argc, const char *argv[]) {
     cv::Mat templateImage = cv::imread(argv[2], cv::IMREAD_GRAYSCALE);
 
     if (templateImage.empty()) {
-      std::cerr << "Couldn't read template image\n";
-      return 1;
+      throw std::runtime_error("Couldn't read template image");
     }
 
     ImageMatch bestMatch;
@@ -103,8 +102,7 @@ int main(int argc, const char *argv[]) {
     cv::Mat originalImage = cv::imread(bestMatchImage->path);
 
     if (originalImage.empty()) {
-      std::cerr << "Couldn't read image\n";
-      exit(1);
+      throw std::runtime_error("Couldn't read source image");
     }
 
     cv::Mat greyEdges = bestMatchImage->edgesAsMatrix();

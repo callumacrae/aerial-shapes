@@ -17,8 +17,7 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
   cv::Mat templateImage = image.edgesAsMatrix();
 
   if (sourceImage.empty()) {
-    std::cerr << "Could not read source image\n";
-    return std::nullopt;
+    throw std::runtime_error("Could not read source image");
   }
 
   std::string title = std::string("Editing ") + image.path;
@@ -35,7 +34,7 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
       templateImage = detectEdgesThreshold(sourceImage, blurSize, sigmaX,
                                            sigmaY, binaryThreshold);
     } else {
-      std::cerr << "This isn't supported yet\n";
+      throw std::invalid_argument("Manual edge editing isn't supported yet");
     }
 
     cv::Mat edges, mask, scaledEdges, scaledPlusEdges;

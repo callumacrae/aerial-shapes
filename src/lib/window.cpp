@@ -3,16 +3,16 @@
 GLFWwindow* window;
 
 static void glfw_error_callback(int error, const char* description) {
-  std::cerr << "Glfw error " << error << ": " << description << '\n';
+  char errorText[50];
+  sprintf(errorText, "Glfw error %i: %s", error, description);
+  throw std::runtime_error(errorText);
 }
 
 void initWindow(int width, int height, const char* title) {
   glfwSetErrorCallback(glfw_error_callback);
 
   if (!glfwInit()) {
-    // todo replace all std::cout with exceptions
-    std::cout << "Error initiating glfw\n";
-    return;
+    throw std::runtime_error("Error initiating glfw");
   }
 
   // Decide GL+GLSL versions
@@ -47,8 +47,7 @@ void initWindow(int width, int height, const char* title) {
   window = glfwCreateWindow(attemptWidth, attemptHeight, title, NULL, NULL);
 
   if (window == NULL) {
-    std::cout << "Error initiating window\n";
-    return;
+    throw std::runtime_error("Error initiating window");
   }
 
   int actualWidth, actualHeight;
@@ -69,8 +68,7 @@ void initWindow(int width, int height, const char* title) {
   // Initialize OpenGL loader
   bool err = gl3wInit() != 0;
   if (err) {
-    std::cout << "Failed to initialize OpenGL loader!\n";
-    return;
+    throw std::runtime_error("Failed to initialize OpenGL loader!");
   }
 
   IMGUI_CHECKVERSION();

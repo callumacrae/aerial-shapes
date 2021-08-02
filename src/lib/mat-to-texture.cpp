@@ -34,8 +34,7 @@ void matToTexture(const cv::Mat &mat, GLuint* outTexture) {
   }
 
   if (!mat.isContinuous()) {
-    // @todo handle this better
-    std::cerr << "MATRIX NOT CONTINUOUS\n";
+    throw std::runtime_error("Matrix not continuous");
   }
 
   // Create the texture

@@ -4,9 +4,7 @@ ImageList::ImageList(std::string dirPath) : dirPath(dirPath) {
   namespace fs = std::filesystem;
 
   if (!fs::exists(dirPath)) {
-    // @todo probably shouldn't log + exit from here
-    std::cerr << "Directory doesn't exist: " << dirPath << '\n';
-    exit(1);
+    throw std::runtime_error("Directory doesn't exist: " + dirPath);
   }
 
   getStored();
@@ -116,8 +114,7 @@ void ImageList::save() {
   storePath.append(".store");
   std::ofstream storeFile(storePath);
   if (!storeFile) {
-    std::cerr << "Failed to open store file.\n";
-    exit(1);
+    throw std::runtime_error("Failed to open store file.");
   }
 
   for (const std::shared_ptr<EdgedImage> &image : store) {
