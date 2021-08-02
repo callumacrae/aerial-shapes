@@ -13,7 +13,7 @@
 
 class ImageList {
 public:
-  typedef std::vector<std::shared_ptr<EdgedImage>> ImageStore;
+  typedef std::vector<std::shared_ptr<EdgedImage>> image_store;
   typedef std::function<bool(std::shared_ptr<EdgedImage>, std::shared_ptr<EdgedImage>)> sort_predicate;
 
 private:
@@ -22,7 +22,7 @@ private:
   bool getStored();
 
 public:
-  ImageStore store;
+  image_store store;
   ImageList(std::string dirPath);
 
   void generate();
@@ -31,9 +31,9 @@ public:
   void sortBy(const sort_predicate &sortFn);
   void sortBy(const char* sorter);
 
-  ImageStore::iterator begin();
-  ImageStore::iterator end();
-  ImageStore::reference at(size_t pos);
+  image_store::iterator begin();
+  image_store::iterator end();
+  image_store::reference at(size_t pos);
 
   int count() const;
 };

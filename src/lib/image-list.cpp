@@ -140,15 +140,15 @@ void ImageList::sortBy(const char* sorter) {
 }
 
 // @todo is there a nicer way to do this?
-ImageList::ImageStore::iterator ImageList::begin() {
+ImageList::image_store::iterator ImageList::begin() {
   return store.begin();
 }
 
-ImageList::ImageStore::iterator ImageList::end() {
+ImageList::image_store::iterator ImageList::end() {
   return store.end();
 }
 
-ImageList::ImageStore::reference ImageList::at(size_t pos) {
+ImageList::image_store::reference ImageList::at(size_t pos) {
   return store.at(pos);
 }
 

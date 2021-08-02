@@ -103,7 +103,7 @@ int main(int argc, const char *argv[]) {
       }
 
       int id = stoi(std::string(arg));
-      ImageList::ImageStore::reference image = imageList.at(id);
+      ImageList::image_store::reference image = imageList.at(id);
 
       std::cout << "Editing: " << image->path << "\n";
 

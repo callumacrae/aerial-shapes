@@ -94,6 +94,8 @@ int main(int argc, const char *argv[]) {
         bestMatch = match;
         bestMatchImage = sourceImage.get();
       }
+      // debugging: only run on first image
+      break;
     }
 
     orderedImages.sortBy("match-percentage");
