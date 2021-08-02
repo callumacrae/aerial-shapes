@@ -27,6 +27,9 @@ int main(int argc, const char *argv[]) {
   int maxOffset = MATCH_MAX_OFFSET;
   float whiteBias = MATCH_WHITE_BIAS;
 
+  bool showEdges = false;
+  bool showTemplate = true;
+
   auto readFinish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<float> readElapsed = readFinish - readStart;
 
@@ -69,6 +72,8 @@ int main(int argc, const char *argv[]) {
   // Warning: sourceImages is managing this memory
   EdgedImage *bestMatchImage;
   int runs;
+  std::chrono::duration<float> matchElapsed;
+  std::chrono::duration<float> previewElapsed;
 
   auto generatePreviewTexture = [&]() {
     cv::Mat canvas = cv::Mat::zeros(CANVAS_HEIGHT, CANVAS_WIDTH, CV_8UC3);
@@ -84,6 +89,8 @@ int main(int argc, const char *argv[]) {
     bestMatchImage = nullptr;
     runs = 0;
 
+    auto matchStart = std::chrono::high_resolution_clock::now();
+
     for (std::shared_ptr<EdgedImage> &sourceImage : sourceImages) {
       ImageMatch match;
       runs += sourceImage->matchTo(greyCanvas, &match, offsetScaleStep,
@@ -93,33 +100,40 @@ int main(int argc, const char *argv[]) {
         bestMatch = match;
         bestMatchImage = sourceImage.get();
       }
-      // debugging: only run on first image
-      break;
     }
+
+    auto matchFinish = std::chrono::high_resolution_clock::now();
+    matchElapsed = matchFinish - matchStart;
+
+    auto previewStart = std::chrono::high_resolution_clock::now();
 
     orderedImages.sortBy("match-percentage");
 
-    cv::Mat originalImage = cv::imread(bestMatchImage->path);
+    cv::Mat originalImage = bestMatchImage->getOriginal();
 
     if (originalImage.empty()) {
       throw std::runtime_error("Couldn't read source image");
     }
 
-    cv::Mat greyEdges = bestMatchImage->edgesAsMatrix();
-    cv::Mat edges, scaledEdges, scaledPlusEdges;
-    cv::cvtColor(greyEdges, edges, cv::COLOR_GRAY2BGR);
-
-    cv::Mat mask;
-    cv::threshold(greyEdges, mask, 0, 255, cv::THRESH_BINARY);
-    edges.setTo(cv::Scalar(255, 0, 0), mask);
-
-    cv::resize(edges, scaledEdges, originalImage.size());
-    cv::bitwise_or(scaledEdges, originalImage, scaledPlusEdges);
-
     cv::Mat sourcePlusEdges;
-    float edgesAlpha = 0.9;
-    cv::addWeighted(scaledPlusEdges, edgesAlpha, originalImage, 1.f - edgesAlpha,
-        0, sourcePlusEdges);
+    if (showEdges) {
+      cv::Mat greyEdges = bestMatchImage->edgesAsMatrix();
+      cv::Mat edges, scaledEdges, scaledPlusEdges;
+      cv::cvtColor(greyEdges, edges, cv::COLOR_GRAY2BGR);
+
+      cv::Mat mask;
+      cv::threshold(greyEdges, mask, 0, 255, cv::THRESH_BINARY);
+      edges.setTo(cv::Scalar(255, 0, 0), mask);
+
+      cv::resize(edges, scaledEdges, originalImage.size(), cv::INTER_NEAREST);
+      cv::bitwise_or(scaledEdges, originalImage, scaledPlusEdges);
+
+      float edgesAlpha = 0.9;
+      cv::addWeighted(scaledPlusEdges, edgesAlpha, originalImage,
+          1.f - edgesAlpha, 0, sourcePlusEdges);
+    } else {
+      sourcePlusEdges = originalImage;
+    }
 
     float realScale = (float)bestMatchImage->width / STORED_EDGES_WIDTH;
 
@@ -133,16 +147,23 @@ int main(int argc, const char *argv[]) {
     cv::Mat scaledImage;
     cv::resize(cropped, scaledImage, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT));
 
-    cv::Mat scaledCanvas, scaledPlusCanvas;
-    cv::resize(canvas, scaledCanvas, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT));
-    cv::bitwise_or(scaledCanvas, scaledImage, scaledPlusCanvas);
-
     cv::Mat out;
-    float canvasAlpha = 0.6;
-    cv::addWeighted(scaledPlusCanvas, canvasAlpha, scaledImage, 1.f - canvasAlpha,
-        0, out);
+    if (showTemplate) {
+      cv::Mat scaledCanvas, scaledPlusCanvas;
+      cv::resize(canvas, scaledCanvas, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT), cv::INTER_NEAREST);
+      cv::bitwise_or(scaledCanvas, scaledImage, scaledPlusCanvas);
+
+      float canvasAlpha = 0.6;
+      cv::addWeighted(scaledPlusCanvas, canvasAlpha, scaledImage, 1.f - canvasAlpha,
+          0, out);
+    } else {
+      out = scaledImage;
+    }
 
     matToTexture(out, &image_tex);
+
+    auto previewFinish = std::chrono::high_resolution_clock::now();
+    previewElapsed = previewFinish - previewStart;
   };
 
   generatePreviewTexture();
@@ -168,19 +189,26 @@ int main(int argc, const char *argv[]) {
 
     ImGui::NewLine();
 
+    changed |= ImGui::Checkbox("Show edges?", &showEdges);
+    changed |= ImGui::Checkbox("Show template?", &showTemplate);
+
+    ImGui::NewLine();
+
     float child_height = ImGui::GetTextLineHeight();
 
-    if (ImGui::TreeNode("Best match info")) {
-      if (ImGui::BeginChild("path", ImVec2(0, child_height))) {
-        ImGui::Text("Best match: %s", bestMatchImage->path.c_str());
-      }
-      ImGui::EndChild();
-      ImGui::Text("%% match: %.1f%%", bestMatch.percentage * 100);
-      ImGui::Text("Scale: %.2f", bestMatch.scale);
-      ImGui::Text("Offset: (%i,%i)", bestMatch.originX, bestMatch.originY);
-      ImGui::Text("Runs: %i", runs);
-      ImGui::TreePop();
+    if (ImGui::BeginChild("path", ImVec2(0, child_height))) {
+      ImGui::Text("Best match: %s", bestMatchImage->path.c_str());
     }
+    ImGui::EndChild();
+    ImGui::Text("%% match: %.1f%%", bestMatch.percentage * 100);
+    ImGui::Text("Scale: %.2f", bestMatch.scale);
+    ImGui::Text("Offset: (%i,%i)", bestMatch.originX, bestMatch.originY);
+    ImGui::Text("Runs: %i", runs);
+    ImGui::Text("Match timer: %.2fs (%.2fs avg)", matchElapsed.count(),
+        matchElapsed.count() / orderedImages.count());
+    ImGui::Text("Preview timer: %.2fs", previewElapsed.count());
+
+    ImGui::NewLine();
 
     if (ImGui::TreeNode("All matches")) {
       if (ImGui::BeginChild("matches")) {

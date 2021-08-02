@@ -16,6 +16,8 @@ class EdgedImage {
   void matchToStep(const cv::Mat &templateImage, ImageMatch *match, float scale,
                   int originX, int originY, float whiteBias = 0.75) const;
 
+  cv::Mat originalImage;
+
   // @todo make this a bit more classey
 public:
   std::string path;
@@ -57,6 +59,7 @@ public:
               int maxOffset = MATCH_MAX_OFFSET,
               float whiteBias = MATCH_WHITE_BIAS);
   cv::Mat edgesAsMatrix() const;
+  cv::Mat getOriginal(bool cache = true);
 
   friend std::ostream& operator<<(std::ostream& os, const EdgedImage& image);
 };

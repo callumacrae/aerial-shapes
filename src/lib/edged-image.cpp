@@ -129,6 +129,20 @@ cv::Mat EdgedImage::edgesAsMatrix() const {
   return mat;
 }
 
+// Cache in memory - takes surprisingly long to read from disk every time
+cv::Mat EdgedImage::getOriginal(bool cache) {
+  if (!cache) {
+    return cv::imread(path);
+  }
+
+  if (!originalImage.empty()) {
+    return originalImage;
+  }
+
+  originalImage = cv::imread(path);
+  return originalImage;
+}
+
 std::ostream& operator<<(std::ostream& os, const EdgedImage& image) {
   os << image.path << ',' << image.width << ',' << image.height << ','
      << image.edges << ',' << image.detectionMode << ','
