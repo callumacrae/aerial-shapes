@@ -12,30 +12,31 @@ set(CMAKE_CXX_FLAGS "-fsanitize=address,undefined")
 
 project(AerialShapes)
 
-add_library(LibraryFiles
+set(LibraryFiles
   src/lib/detect-edge.cpp
   src/lib/edged-image.cpp
   src/lib/edit-image-edges.cpp
   src/lib/image-list.cpp
   src/lib/mat-to-texture.cpp
   src/lib/window.cpp)
-add_executable(process_images src/process_images.cpp)
-add_executable(match src/match.cpp)
-target_link_libraries(process_images LibraryFiles)
-target_link_libraries(match LibraryFiles)
+add_executable(process_images src/process_images.cpp ${LibraryFiles})
+add_executable(match src/match.cpp ${LibraryFiles})
 
 target_precompile_headers(process_images PRIVATE src/precompiled.h)
 target_precompile_headers(match REUSE_FROM process_images)
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
-target_link_libraries(LibraryFiles ${OpenCV_LIBS})
+target_link_libraries(process_images ${OpenCV_LIBS})
+target_link_libraries(match ${OpenCV_LIBS})
 
 find_package(Boost 1.76.0 REQUIRED COMPONENTS container)
-target_link_libraries(LibraryFiles Boost::container)
+target_link_libraries(process_images Boost::container)
+target_link_libraries(match Boost::container)
 
 include(cmake/imgui.cmake)
-target_link_libraries(LibraryFiles glfw IMGUI GL3W)
+target_link_libraries(process_images glfw IMGUI GL3W)
+target_link_libraries(match glfw IMGUI GL3W)
 
 FetchContent_Declare(
   linenoise
