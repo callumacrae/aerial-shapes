@@ -8,6 +8,14 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
   int channels = templateImage.channels();
   CV_Assert(channels == 1);
 
+  // Converting to a vector means we only have to do the bitwise operations
+  // required to access a bitset once per run
+  std::vector<uchar> edgesVec;
+  edgesVec.reserve(edges.size());
+  for (int i = 0; i < edges.size(); ++i) {
+    edgesVec.push_back(edges[i] ? 255 : 0);
+  }
+
   int sourceImageActualHeight = (float) STORED_EDGES_WIDTH / width * height;
   float scaleX = (float) STORED_EDGES_WIDTH / templateImage.cols;
   float scaleY = (float) sourceImageActualHeight / templateImage.rows;
@@ -16,9 +24,10 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
 
   ImageMatch bestMatch;
 
-  minOffsetScale = fmax(minOffsetScale, (float) OUTPUT_WIDTH / width * 2);
+  minOffsetScale = fmax(minOffsetScale, (float) OUTPUT_WIDTH / width);
 
   int runs = 0;
+  int fullRuns = 0;
 
   for (float offsetScale = 1; offsetScale >= minOffsetScale; offsetScale -= offsetScaleStep) {
     float scale = scaleBase * offsetScale;
@@ -47,13 +56,21 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
             int offsetY = offsetYRoot * offsetYMultiplier;
 
             ImageMatch match;
-            matchToStep(templateImage, &match, scale, originX + offsetX,
-                        originY + offsetY, whiteBias);
-            runs++;
+            matchToStep(templateImage, edgesVec, &match, scale,
+                        originX + offsetX, originY + offsetY, 10, whiteBias);
 
-            if (match.percentage > bestMatch.percentage) {
-              bestMatch = match;
+            if (runs == 0 || (match.percentage > 0.5 &&
+                              match.percentage > bestMatch.percentage - 0.1)) {
+              matchToStep(templateImage, edgesVec, &match, scale,
+                          originX + offsetX, originY + offsetY, 1, whiteBias);
+              fullRuns++;
+
+              if (match.percentage > bestMatch.percentage) {
+                bestMatch = match;
+              }
             }
+
+            runs++;
 
             if (offsetY == 0) {
               break;
@@ -74,14 +91,16 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
   return runs;
 }
 
-void EdgedImage::matchToStep(const cv::Mat &templateImage, ImageMatch *match,
-    float scale, int originX, int originY, float whiteBias) const {
+void EdgedImage::matchToStep(const cv::Mat &templateImage,
+                             std::vector<uchar> &edgesVec, ImageMatch *match,
+                             float scale, int originX, int originY,
+                             int rowStep, float whiteBias) const {
   int testedBlack = 0;
   int matchingBlack = 0;
   int testedWhite = 0;
   int matchingWhite = 0;
 
-  for (int y = 0; y < templateImage.rows; ++y) {
+  for (int y = 0; y < templateImage.rows; y += rowStep) {
     const uchar* p = templateImage.ptr<uchar>(y);
 
     for (int x = 0; x < templateImage.cols; ++x) {
@@ -90,7 +109,7 @@ void EdgedImage::matchToStep(const cv::Mat &templateImage, ImageMatch *match,
       int transformedX = originX + floor((float) x * scale);
       int transformedY = originY + floor((float) y * scale);
       int i = transformedY * STORED_EDGES_WIDTH + transformedX;
-      bool sourcePixVal = edges[i];
+      bool sourcePixVal = edgesVec[i];
 
       if (templatePixVal == 1) {
         if (templatePixVal == sourcePixVal) {

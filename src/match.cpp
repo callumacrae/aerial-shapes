@@ -101,6 +101,9 @@ int main(int argc, const char *argv[]) {
         bestMatch = match;
         bestMatchImage = sourceImage.get();
       }
+
+      // debug - only first image
+      /* break; */
     }
 
     auto matchFinish = std::chrono::high_resolution_clock::now();
