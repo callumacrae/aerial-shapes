@@ -131,6 +131,11 @@ void ImageList::sortBy(const char* sorter) {
               std::shared_ptr<EdgedImage> b) -> bool {
       return a->lastMatch.percentage > b->lastMatch.percentage;
     });
+  } else if (strcmp(sorter, "path") == 0) {
+    sortBy([](std::shared_ptr<EdgedImage> a,
+              std::shared_ptr<EdgedImage> b) -> bool {
+      return a->path < b->path;
+    });
   } else {
     throw std::runtime_error("Invalid sorter specified");
   }

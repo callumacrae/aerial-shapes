@@ -19,6 +19,7 @@ int main(int argc, const char *argv[]) {
   std::cout << std::fixed << std::setprecision(2);
 
   ImageList imageList(argv[1]);
+  imageList.sortBy("path");
 
   if (imageList.count()) {
     auto readFinish = std::chrono::high_resolution_clock::now();

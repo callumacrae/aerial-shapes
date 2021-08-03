@@ -11,8 +11,9 @@
 int main(int argc, const char *argv[]) {
   auto readStart = std::chrono::high_resolution_clock::now();
 
-  // todo sort alphabetically
   ImageList sourceImages = ImageList(argv[1]);
+  sourceImages.sortBy("path");
+
   ImageList orderedImages = sourceImages;
 
   int width = 100;
@@ -101,9 +102,6 @@ int main(int argc, const char *argv[]) {
         bestMatch = match;
         bestMatchImage = sourceImage.get();
       }
-
-      // debug - only first image
-      /* break; */
     }
 
     auto matchFinish = std::chrono::high_resolution_clock::now();
