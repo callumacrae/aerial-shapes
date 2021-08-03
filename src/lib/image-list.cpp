@@ -88,25 +88,57 @@ void ImageList::generate() {
   for (const auto &file : fs::directory_iterator(dirPath)) {
     if (std::string(file.path().filename())[0] == '.') {
       std::cout << "Skipping: " << file.path() << '\n';
-      continue;
+      return;
     }
 
-    std::cout << "Reading: " << file.path();
-
-    cv::Mat sourceImage = cv::imread(file.path());
-
-    if (sourceImage.empty()) {
-      std::cout << " (skipping, cannot read)\n";
-      continue;
-    } else {
-      std::cout << '\n';
-    }
-
-    auto edgesMat = detectEdgesCanny(sourceImage);
-    auto edges = edgesToBitset(edgesMat);
-    store.push_back(std::make_shared<EdgedImage>(file.path(), sourceImage.cols,
-                                                 sourceImage.rows, edges));
+    addFile(file);
   }
+}
+
+int ImageList::sync() {
+  namespace fs = std::filesystem;
+  
+  int added = 0;
+  
+  for (const auto &file : fs::directory_iterator(dirPath)) {
+    if (std::string(file.path().filename())[0] == '.') {
+      continue;
+    }
+
+    bool exists = false;
+    for (const std::shared_ptr<EdgedImage> &image : store) {
+      if (image->path == std::string(file.path())) {
+        exists = true;
+        break;
+      }
+    }
+    if (exists) {
+      continue;
+    }
+
+    addFile(file);
+    added++;
+  }
+
+  return added;
+}
+
+void ImageList::addFile(const std::filesystem::directory_entry &file) {
+  std::cout << "Reading: " << file.path();
+
+  cv::Mat sourceImage = cv::imread(file.path());
+
+  if (sourceImage.empty()) {
+    std::cout << " (skipping, cannot read)\n";
+    return;
+  } else {
+    std::cout << '\n';
+  }
+
+  auto edgesMat = detectEdgesCanny(sourceImage);
+  auto edges = edgesToBitset(edgesMat);
+  store.push_back(std::make_shared<EdgedImage>(file.path(), sourceImage.cols,
+                                               sourceImage.rows, edges));
 }
 
 void ImageList::save() {
@@ -147,7 +179,6 @@ int ImageList::matchTo(const cv::Mat &templateImage, ImageMatch *bestMatch,
       std::shared_ptr<EdgedImage> sourceImage = store[indexToGet];
 
       ImageMatch match;
-      // todo make args const for thread safety confidence
       runs += sourceImage->matchTo(templateImage, &match, offsetScaleStep,
                                    offsetXStep, offsetYStep, minOffsetScale,
                                    maxOffset, whiteBias);

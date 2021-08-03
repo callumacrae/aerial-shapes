@@ -86,6 +86,32 @@ int main(int argc, const char *argv[]) {
       auto finish = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsed = finish - start;
       std::cout << "Generated in " << elapsed.count() << "s\n";
+    } else if (command == "sync") {
+      auto imageListBackup = imageList;
+
+      int newImages = imageList.sync();
+
+      if (!newImages) {
+        std::cout << "Synced: no new images found\n";
+        continue;
+      }
+
+      char prompt[35];
+      sprintf(prompt, "%i new images found, save? (Y/n) ", newImages);
+
+      std::string line;
+      auto quit = linenoise::Readline(prompt, line);
+
+      if (quit) {
+        break;
+      }
+
+      if (line != "n") {
+        std::cout << "Saving " << newImages << " new images to store\n";
+        imageList.save();
+      } else {
+        imageList = imageListBackup;
+      }
     } else if (command == "ls") {
       std::cout << imageList.count() << " images in store:\n\n";
 
@@ -117,6 +143,8 @@ int main(int argc, const char *argv[]) {
       } else {
         std::cout << "Changes discarded\n";
       }
+    } else {
+      std::cout << "?\n";
     }
   }
 }

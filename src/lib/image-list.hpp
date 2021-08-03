@@ -22,6 +22,7 @@ private:
   std::string dirPath;
 
   bool getStored();
+  void addFile(const std::filesystem::directory_entry &file);
 
 public:
   image_store store;
@@ -29,6 +30,7 @@ public:
 
   void generate();
   void save();
+  int sync();
 
   int matchTo(const cv::Mat &templateImage, ImageMatch *match,
               EdgedImage **bestMatchImage,

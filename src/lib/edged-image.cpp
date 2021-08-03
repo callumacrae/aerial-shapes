@@ -92,9 +92,9 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
 }
 
 void EdgedImage::matchToStep(const cv::Mat &templateImage,
-                             std::vector<uchar> &edgesVec, ImageMatch *match,
-                             float scale, int originX, int originY,
-                             int rowStep, float whiteBias) const {
+                             const std::vector<uchar> &edgesVec,
+                             ImageMatch *match, float scale, int originX,
+                             int originY, int rowStep, float whiteBias) const {
   int testedBlack = 0;
   int matchingBlack = 0;
   int testedWhite = 0;
