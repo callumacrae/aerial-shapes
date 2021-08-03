@@ -126,20 +126,50 @@ int ImageList::matchTo(const cv::Mat &templateImage, ImageMatch *bestMatch,
                        EdgedImage **bestMatchImage, float offsetScaleStep,
                        int offsetXStep, int offsetYStep, float minOffsetScale,
                        int maxOffset, float whiteBias) {
-  int runs = 0;
+  std::atomic_int runs(0);
+  int maxThreads = std::thread::hardware_concurrency(); // todo undefined?
+  if (maxThreads == 0) {
+    throw std::runtime_error("hardware_concurrency() returning 0, unsupported");
+  }
+  int threads = std::min(maxThreads, count());
 
-  for (std::shared_ptr<EdgedImage> &sourceImage : store) {
-    ImageMatch match;
-    runs += sourceImage->matchTo(templateImage, &match, offsetScaleStep,
-                                 offsetXStep, offsetYStep, minOffsetScale,
-                                 maxOffset, whiteBias);
+  std::vector<std::thread> threadVector;
 
-    if (match.percentage > bestMatch->percentage) {
-      *bestMatch = match;
-      *bestMatchImage = sourceImage.get();
+  std::atomic_int imageIndex(0);
+  std::mutex bestMatchMutex;
+
+  auto threadFn = [&]() {
+    while (true) {
+      int indexToGet = imageIndex++;
+      if (indexToGet > store.size() - 1) {
+        return;
+      }
+      std::shared_ptr<EdgedImage> sourceImage = store[indexToGet];
+
+      ImageMatch match;
+      // todo make args const for thread safety confidence
+      runs += sourceImage->matchTo(templateImage, &match, offsetScaleStep,
+                                   offsetXStep, offsetYStep, minOffsetScale,
+                                   maxOffset, whiteBias);
+
+      std::lock_guard<std::mutex> bestMatchLock(bestMatchMutex);
+
+      if (match.percentage > bestMatch->percentage) {
+        *bestMatch = match;
+        *bestMatchImage = sourceImage.get();
+      }
+    }
+  };
+
+  for (int i = 0; i < threads; ++i) {
+    threadVector.emplace_back(threadFn);
+  }
+  for (std::thread &t : threadVector) {
+    if (t.joinable()) {
+      t.join();
     }
   }
-  
+
   return runs;
 };
 

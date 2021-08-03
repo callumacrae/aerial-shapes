@@ -1,8 +1,10 @@
 #pragma once
 
+#include <atomic>
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <thread>
 #include <vector>
 
 #include "../precompiled.h"
