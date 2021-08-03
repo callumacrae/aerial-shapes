@@ -49,17 +49,9 @@ int main(int argc, const char *argv[]) {
     // Warning: sourceImages is managing this memory
     EdgedImage *bestMatchImage;
 
-    for (std::shared_ptr<EdgedImage> &sourceImage : sourceImages) {
-      ImageMatch match;
-      sourceImage->matchTo(templateImage, &match);
-      std::cout << sourceImage->path << " match: " << (match.percentage * 100)
-                << "%\n";
-
-      if (match.percentage > bestMatch.percentage) {
-        bestMatch = match;
-        bestMatchImage = sourceImage.get();
-      }
-    }
+    sourceImages.matchTo(templateImage, &bestMatch, &bestMatchImage,
+                         offsetScaleStep, offsetXStep, offsetYStep,
+                         minOffsetScale, maxOffset, whiteBias);
 
     std::cout << "\nBest match is " << bestMatchImage->path << " with "
               << (bestMatch.percentage * 100) << "%\n";
@@ -89,20 +81,12 @@ int main(int argc, const char *argv[]) {
 
     bestMatch = ImageMatch();
     bestMatchImage = nullptr;
-    runs = 0;
 
     auto matchStart = std::chrono::high_resolution_clock::now();
 
-    for (std::shared_ptr<EdgedImage> &sourceImage : sourceImages) {
-      ImageMatch match;
-      runs += sourceImage->matchTo(greyCanvas, &match, offsetScaleStep,
-                                  offsetXStep, offsetYStep, minOffsetScale,
-                                  maxOffset, whiteBias);
-      if (match.percentage > bestMatch.percentage) {
-        bestMatch = match;
-        bestMatchImage = sourceImage.get();
-      }
-    }
+    runs = sourceImages.matchTo(greyCanvas, &bestMatch, &bestMatchImage,
+                                offsetScaleStep, offsetXStep, offsetYStep,
+                                minOffsetScale, maxOffset, whiteBias);
 
     auto matchFinish = std::chrono::high_resolution_clock::now();
     matchElapsed = matchFinish - matchStart;

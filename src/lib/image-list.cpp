@@ -122,6 +122,27 @@ void ImageList::save() {
   }
 }
 
+int ImageList::matchTo(const cv::Mat &templateImage, ImageMatch *bestMatch,
+                       EdgedImage **bestMatchImage, float offsetScaleStep,
+                       int offsetXStep, int offsetYStep, float minOffsetScale,
+                       int maxOffset, float whiteBias) {
+  int runs;
+
+  for (std::shared_ptr<EdgedImage> &sourceImage : store) {
+    ImageMatch match;
+    runs += sourceImage->matchTo(templateImage, &match, offsetScaleStep,
+                                 offsetXStep, offsetYStep, minOffsetScale,
+                                 maxOffset, whiteBias);
+
+    if (match.percentage > bestMatch->percentage) {
+      *bestMatch = match;
+      *bestMatchImage = sourceImage.get();
+    }
+  }
+  
+  return runs;
+};
+
 void ImageList::sortBy(const ImageList::sort_predicate &sortFn) {
   std::sort(store.begin(), store.end(), sortFn);
 }
