@@ -126,7 +126,7 @@ int ImageList::matchTo(const cv::Mat &templateImage, ImageMatch *bestMatch,
                        EdgedImage **bestMatchImage, float offsetScaleStep,
                        int offsetXStep, int offsetYStep, float minOffsetScale,
                        int maxOffset, float whiteBias) {
-  int runs;
+  int runs = 0;
 
   for (std::shared_ptr<EdgedImage> &sourceImage : store) {
     ImageMatch match;
