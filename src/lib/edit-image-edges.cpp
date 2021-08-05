@@ -8,7 +8,7 @@ enum ManualEditModes {
   ManualEditMode_Square
 };
 
-std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
+std::optional<EdgedImage *> editImageEdges(EdgedImage &image) {
   int detectionMode = image.detectionMode;
   int blurSize = image.detectionBlurSize;
   int sigmaX = image.detectionBlurSigmaX;
@@ -35,10 +35,12 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
   ImVec2 mouseCurrentPos(-1, -1);
 
   auto drawTo = [&](cv::Mat &edges, bool preview = false) {
-    int storedEdgesHeight = (float) STORED_EDGES_WIDTH / edges.cols * edges.rows;
+    int storedEdgesHeight = (float)STORED_EDGES_WIDTH / edges.cols * edges.rows;
 
-    cv::Point pointA(mouseDownPos.x * STORED_EDGES_WIDTH, mouseDownPos.y * storedEdgesHeight);
-    cv::Point pointB(mouseCurrentPos.x * STORED_EDGES_WIDTH, mouseCurrentPos.y * storedEdgesHeight);
+    cv::Point pointA(mouseDownPos.x * STORED_EDGES_WIDTH,
+                     mouseDownPos.y * storedEdgesHeight);
+    cv::Point pointB(mouseCurrentPos.x * STORED_EDGES_WIDTH,
+                     mouseCurrentPos.y * storedEdgesHeight);
 
     cv::Scalar color =
         edges.channels() == 3 ? cv::Scalar(0, 0, 255) : cv::Scalar(255);
@@ -58,7 +60,8 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
   auto generatePreviewTexture = [&](bool initial) {
     // previewTemplateImage is for previewing manual edits
     cv::Mat previewTemplateImage;
-    bool drawing = detectionMode == ImageEdgeMode_Manual && mouseDownPos.x != -1;
+    bool drawing =
+        detectionMode == ImageEdgeMode_Manual && mouseDownPos.x != -1;
 
     if (!initial) {
       if (detectionMode == ImageEdgeMode_Canny) {
@@ -96,7 +99,7 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
 
   bool save = false;
 
-  openWindow([&](GLFWwindow* window, ImGuiIO& io) {
+  openWindow([&](GLFWwindow *window, ImGuiIO &io) {
     int actualWidth, actualHeight;
     glfwGetWindowSize(window, &actualWidth, &actualHeight);
 
@@ -104,12 +107,15 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
 
     if (!io.WantCaptureMouse && detectionMode == ImageEdgeMode_Manual) {
       if (io.MouseDown[0] && mouseDownPos.x == -1) {
-        mouseDownPos = { io.MousePos.x / actualWidth, io.MousePos.y / actualHeight };
+        mouseDownPos = {io.MousePos.x / actualWidth,
+                        io.MousePos.y / actualHeight};
         mouseCurrentPos = mouseDownPos;
         changed = true;
       } else if (mouseDownPos.x != -1) {
-        if (mouseCurrentPos.x != io.MousePos.x || mouseCurrentPos.y != io.MousePos.y) {
-          mouseCurrentPos = { io.MousePos.x / actualWidth, io.MousePos.y / actualHeight };
+        if (mouseCurrentPos.x != io.MousePos.x ||
+            mouseCurrentPos.y != io.MousePos.y) {
+          mouseCurrentPos = {io.MousePos.x / actualWidth,
+                             io.MousePos.y / actualHeight};
           changed = true;
         }
 
@@ -128,9 +134,11 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
     ImGui::SameLine();
     changed |= ImGui::RadioButton("Canny", &detectionMode, ImageEdgeMode_Canny);
     ImGui::SameLine();
-    changed |= ImGui::RadioButton("Threshold", &detectionMode, ImageEdgeMode_Threshold);
+    changed |= ImGui::RadioButton("Threshold", &detectionMode,
+                                  ImageEdgeMode_Threshold);
     ImGui::SameLine();
-    changed |= ImGui::RadioButton("Manual", &detectionMode, ImageEdgeMode_Manual);
+    changed |=
+        ImGui::RadioButton("Manual", &detectionMode, ImageEdgeMode_Manual);
 
     ImGui::NewLine();
 
@@ -229,4 +237,3 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
                         detectionMode, blurSize, sigmaX, sigmaY, threshold1,
                         threshold2, joinByX, joinByY, binaryThreshold);
 }
-

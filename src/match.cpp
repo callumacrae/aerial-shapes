@@ -116,7 +116,7 @@ int main(int argc, const char *argv[]) {
 
       float edgesAlpha = 0.9;
       cv::addWeighted(scaledPlusEdges, edgesAlpha, originalImage,
-          1.f - edgesAlpha, 0, sourcePlusEdges);
+                      1.f - edgesAlpha, 0, sourcePlusEdges);
     } else {
       sourcePlusEdges = originalImage;
     }
@@ -136,12 +136,13 @@ int main(int argc, const char *argv[]) {
     cv::Mat out;
     if (showTemplate) {
       cv::Mat scaledCanvas, scaledPlusCanvas;
-      cv::resize(canvas, scaledCanvas, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT), cv::INTER_NEAREST);
+      cv::resize(canvas, scaledCanvas, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT),
+                 cv::INTER_NEAREST);
       cv::bitwise_or(scaledCanvas, scaledImage, scaledPlusCanvas);
 
       float canvasAlpha = 0.6;
-      cv::addWeighted(scaledPlusCanvas, canvasAlpha, scaledImage, 1.f - canvasAlpha,
-          0, out);
+      cv::addWeighted(scaledPlusCanvas, canvasAlpha, scaledImage,
+                      1.f - canvasAlpha, 0, out);
     } else {
       out = scaledImage;
     }
@@ -154,7 +155,7 @@ int main(int argc, const char *argv[]) {
 
   generatePreviewTexture();
 
-  openWindow([&](GLFWwindow* window) {
+  openWindow([&](GLFWwindow *window, ImGuiIO &io) {
     bool changed = false;
 
     ImGui::SetNextWindowFocus();
@@ -166,7 +167,8 @@ int main(int argc, const char *argv[]) {
 
     ImGui::NewLine();
 
-    changed |= ImGui::SliderFloat("Offset scale step", &offsetScaleStep, 0.05, 0.5);
+    changed |=
+        ImGui::SliderFloat("Offset scale step", &offsetScaleStep, 0.05, 0.5);
     changed |= ImGui::SliderInt("Offset x step", &offsetXStep, 1, 20);
     changed |= ImGui::SliderInt("Offset y step", &offsetYStep, 1, 20);
     changed |= ImGui::SliderFloat("Min offset scale", &minOffsetScale, 0, 0.9);
@@ -191,7 +193,7 @@ int main(int argc, const char *argv[]) {
     ImGui::Text("Offset: (%i,%i)", bestMatch.originX, bestMatch.originY);
     ImGui::Text("Runs: %i", runs);
     ImGui::Text("Match timer: %.2fs (%.2fs avg)", matchElapsed.count(),
-        matchElapsed.count() / orderedImages.count());
+                matchElapsed.count() / orderedImages.count());
     ImGui::Text("Preview timer: %.2fs", previewElapsed.count());
 
     ImGui::NewLine();
@@ -199,7 +201,8 @@ int main(int argc, const char *argv[]) {
     if (ImGui::TreeNode("All matches")) {
       if (ImGui::BeginChild("matches")) {
         for (auto &image : orderedImages) {
-          ImGui::Text("%.1f%%: %s", image->lastMatch.percentage * 100, image->path.c_str());
+          ImGui::Text("%.1f%%: %s", image->lastMatch.percentage * 100,
+                      image->path.c_str());
         }
       }
       ImGui::EndChild();

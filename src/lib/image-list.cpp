@@ -13,7 +13,7 @@ ImageList::ImageList(std::string dirPath) : dirPath(dirPath) {
 bool ImageList::getStored() {
   namespace fs = std::filesystem;
 
-  fs::path storePath { dirPath };
+  fs::path storePath{dirPath};
   storePath.append(".store");
   std::ifstream storeFile(storePath);
   if (!storeFile) {
@@ -82,7 +82,7 @@ bool ImageList::getStored() {
 
 void ImageList::generate() {
   namespace fs = std::filesystem;
-  
+
   store.clear();
 
   for (const auto &file : fs::directory_iterator(dirPath)) {
@@ -97,9 +97,9 @@ void ImageList::generate() {
 
 int ImageList::sync() {
   namespace fs = std::filesystem;
-  
+
   int added = 0;
-  
+
   for (const auto &file : fs::directory_iterator(dirPath)) {
     if (std::string(file.path().filename())[0] == '.') {
       continue;
@@ -142,7 +142,7 @@ void ImageList::addFile(const std::filesystem::directory_entry &file) {
 }
 
 void ImageList::save() {
-  std::filesystem::path storePath { dirPath };
+  std::filesystem::path storePath{dirPath};
   storePath.append(".store");
   std::ofstream storeFile(storePath);
   if (!storeFile) {
@@ -207,7 +207,7 @@ int ImageList::matchTo(const cv::Mat &templateImage, ImageMatch *bestMatch,
 void ImageList::sortBy(const ImageList::sort_predicate &sortFn) {
   std::sort(store.begin(), store.end(), sortFn);
 }
-void ImageList::sortBy(const char* sorter) {
+void ImageList::sortBy(const char *sorter) {
   if (strcmp(sorter, "match-percentage") == 0) {
     sortBy([](std::shared_ptr<EdgedImage> a,
               std::shared_ptr<EdgedImage> b) -> bool {
@@ -224,18 +224,12 @@ void ImageList::sortBy(const char* sorter) {
 }
 
 // @todo is there a nicer way to do this?
-ImageList::image_store::iterator ImageList::begin() {
-  return store.begin();
-}
+ImageList::image_store::iterator ImageList::begin() { return store.begin(); }
 
-ImageList::image_store::iterator ImageList::end() {
-  return store.end();
-}
+ImageList::image_store::iterator ImageList::end() { return store.end(); }
 
 ImageList::image_store::reference ImageList::at(size_t pos) {
   return store.at(pos);
 }
 
-int ImageList::count() const {
-  return store.size();
-}
+int ImageList::count() const { return store.size(); }

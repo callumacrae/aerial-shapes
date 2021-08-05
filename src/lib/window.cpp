@@ -1,14 +1,14 @@
 #include "window.hpp"
 
-GLFWwindow* window;
+GLFWwindow *window;
 
-static void glfw_error_callback(int error, const char* description) {
+static void glfw_error_callback(int error, const char *description) {
   char errorText[50];
   sprintf(errorText, "Glfw error %i: %s", error, description);
   throw std::runtime_error(errorText);
 }
 
-void initWindow(int width, int height, const char* title) {
+void initWindow(int width, int height, const char *title) {
   glfwSetErrorCallback(glfw_error_callback);
 
   if (!glfwInit()) {
@@ -18,28 +18,28 @@ void initWindow(int width, int height, const char* title) {
   // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
   // GL ES 2.0 + GLSL 100
-  const char* glsl_version = "#version 100";
+  const char *glsl_version = "#version 100";
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
 #elif defined(__APPLE__)
   // GL 3.2 + GLSL 150
-  const char* glsl_version = "#version 150";
+  const char *glsl_version = "#version 150";
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);      // Required on Mac
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
 #else
   // GL 3.0 + GLSL 130
-  const char* glsl_version = "#version 130";
+  const char *glsl_version = "#version 130";
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-  //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-  //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);      // 3.0+ only
+  // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+
+  // only glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);      // 3.0+ only
 #endif
 
-  GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+  GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+  const GLFWvidmode *mode = glfwGetVideoMode(monitor);
 
   // Create window with graphics context
   int attemptWidth = std::min(mode->width, width);
@@ -54,7 +54,8 @@ void initWindow(int width, int height, const char* title) {
   glfwGetWindowSize(window, &actualWidth, &actualHeight);
 
   if (actualWidth < width || actualHeight < height) {
-    float scale = fmin((float)actualWidth / width, (float)actualHeight / height);
+    float scale =
+        fmin((float)actualWidth / width, (float)actualHeight / height);
     width *= scale;
     height *= scale;
   }
@@ -73,7 +74,8 @@ void initWindow(int width, int height, const char* title) {
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO(); (void)io;
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
@@ -87,7 +89,7 @@ void openWindow(const onFrameFn &onFrame) {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO &io = ImGui::GetIO();
 
     bool shouldClose = onFrame(window, io);
     if (shouldClose) {

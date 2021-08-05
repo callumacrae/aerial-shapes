@@ -3,8 +3,7 @@
 // these vars can probs be hardcoded once i've figured out what it should be
 int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
                         float offsetScaleStep, int offsetXStep, int offsetYStep,
-                        float minOffsetScale, int maxOffset,
-                        float whiteBias) {
+                        float minOffsetScale, int maxOffset, float whiteBias) {
   int channels = templateImage.channels();
   CV_Assert(channels == 1);
 
@@ -16,20 +15,21 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
     edgesVec.push_back(edges[i] ? 255 : 0);
   }
 
-  int sourceImageActualHeight = (float) STORED_EDGES_WIDTH / width * height;
-  float scaleX = (float) STORED_EDGES_WIDTH / templateImage.cols;
-  float scaleY = (float) sourceImageActualHeight / templateImage.rows;
+  int sourceImageActualHeight = (float)STORED_EDGES_WIDTH / width * height;
+  float scaleX = (float)STORED_EDGES_WIDTH / templateImage.cols;
+  float scaleY = (float)sourceImageActualHeight / templateImage.rows;
 
   float scaleBase = fmin(scaleX, scaleY);
 
   ImageMatch bestMatch;
 
-  minOffsetScale = fmax(minOffsetScale, (float) OUTPUT_WIDTH / width);
+  minOffsetScale = fmax(minOffsetScale, (float)OUTPUT_WIDTH / width);
 
   int runs = 0;
   int fullRuns = 0;
 
-  for (float offsetScale = 1; offsetScale >= minOffsetScale; offsetScale -= offsetScaleStep) {
+  for (float offsetScale = 1; offsetScale >= minOffsetScale;
+       offsetScale -= offsetScaleStep) {
     float scale = scaleBase * offsetScale;
 
     int originX = 0;
@@ -46,13 +46,17 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
     int maxOffsetX = std::min(maxOffset, originX);
     int maxOffsetY = std::min(maxOffset, originY);
 
-    for (int offsetXRoot = 0; offsetXRoot <= maxOffsetX; offsetXRoot += offsetXStep) {
-      for (int offsetXMultiplier = -1; offsetXMultiplier <= 1; offsetXMultiplier += 2) {
+    for (int offsetXRoot = 0; offsetXRoot <= maxOffsetX;
+         offsetXRoot += offsetXStep) {
+      for (int offsetXMultiplier = -1; offsetXMultiplier <= 1;
+           offsetXMultiplier += 2) {
         // Search inside out, e.g. 0 -1 1 -2 2 -3 3
         int offsetX = offsetXRoot * offsetXMultiplier;
 
-        for (int offsetYRoot = 0; offsetYRoot <= maxOffsetY; offsetYRoot += offsetYStep) {
-          for (int offsetYMultiplier = -1; offsetYMultiplier <= 1; offsetYMultiplier += 2) {
+        for (int offsetYRoot = 0; offsetYRoot <= maxOffsetY;
+             offsetYRoot += offsetYStep) {
+          for (int offsetYMultiplier = -1; offsetYMultiplier <= 1;
+               offsetYMultiplier += 2) {
             int offsetY = offsetYRoot * offsetYMultiplier;
 
             ImageMatch match;
@@ -101,13 +105,13 @@ void EdgedImage::matchToStep(const cv::Mat &templateImage,
   int matchingWhite = 0;
 
   for (int y = 0; y < templateImage.rows; y += rowStep) {
-    const uchar* p = templateImage.ptr<uchar>(y);
+    const uchar *p = templateImage.ptr<uchar>(y);
 
     for (int x = 0; x < templateImage.cols; ++x) {
       bool templatePixVal = p[x] != 0;
 
-      int transformedX = originX + floor((float) x * scale);
-      int transformedY = originY + floor((float) y * scale);
+      int transformedX = originX + floor((float)x * scale);
+      int transformedY = originY + floor((float)y * scale);
       int i = transformedY * STORED_EDGES_WIDTH + transformedX;
       bool sourcePixVal = edgesVec[i];
 
@@ -125,9 +129,10 @@ void EdgedImage::matchToStep(const cv::Mat &templateImage,
     }
   }
 
-  float percentageBlack = (float) matchingBlack / testedBlack;
-  float percentageWhite = (float) matchingWhite / testedWhite;
-  float percentage = percentageWhite * whiteBias + percentageBlack * (1 - whiteBias);
+  float percentageBlack = (float)matchingBlack / testedBlack;
+  float percentageWhite = (float)matchingWhite / testedWhite;
+  float percentage =
+      percentageWhite * whiteBias + percentageBlack * (1 - whiteBias);
   *match = ImageMatch{percentage, scale, originX, originY};
 }
 
@@ -162,7 +167,7 @@ cv::Mat EdgedImage::getOriginal(bool cache) {
   return originalImage;
 }
 
-std::ostream& operator<<(std::ostream& os, const EdgedImage& image) {
+std::ostream &operator<<(std::ostream &os, const EdgedImage &image) {
   os << image.path << ',' << image.width << ',' << image.height << ','
      << image.edges << ',' << image.detectionMode << ','
      << image.detectionBlurSize << ',' << image.detectionBlurSigmaX << ','

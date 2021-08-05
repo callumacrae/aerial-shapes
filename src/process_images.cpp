@@ -134,7 +134,7 @@ int main(int argc, const char *argv[]) {
 
       std::cout << "Editing: " << image->path << "\n";
 
-      std::optional<EdgedImage*> maybeNewImage = editImageEdges(*image);
+      std::optional<EdgedImage *> maybeNewImage = editImageEdges(*image);
 
       if (maybeNewImage.has_value()) {
         image = std::shared_ptr<EdgedImage>(maybeNewImage.value());

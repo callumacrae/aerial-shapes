@@ -5,9 +5,9 @@ static cv::Mat blurImage(const cv::Mat &sourceImage, int blurSize, int sigmaX,
   cv::Mat image, imageBlurred;
 
   int width = EDGE_DETECTION_WIDTH;
-  int height = (double) sourceImage.rows / sourceImage.cols * width;
-  cv::resize(sourceImage, image, { width, height });
-  cv::GaussianBlur(image, imageBlurred, { blurSize, blurSize }, sigmaX, sigmaY);
+  int height = (double)sourceImage.rows / sourceImage.cols * width;
+  cv::resize(sourceImage, image, {width, height});
+  cv::GaussianBlur(image, imageBlurred, {blurSize, blurSize}, sigmaX, sigmaY);
 
   return imageBlurred;
 }
@@ -29,7 +29,7 @@ cv::Mat detectEdgesCanny(const cv::Mat &sourceImage, int blurSize, int sigmaX,
 
     cv::Mat imageDilated;
     cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE,
-                       cv::Size(joinByX, joinByY));
+                                               cv::Size(joinByX, joinByY));
 
     cv::dilate(imageCanny, imageDilated, kernel);
     cv::erode(imageDilated, imageCanny, kernel);
@@ -37,19 +37,19 @@ cv::Mat detectEdgesCanny(const cv::Mat &sourceImage, int blurSize, int sigmaX,
 
   if (EDGE_DETECTION_WIDTH == STORED_EDGES_WIDTH) {
     return imageCanny;
-  } 
+  }
 
   cv::Mat imageResized;
   int finalWidth = STORED_EDGES_WIDTH;
-  int finalHeight = (double) sourceImage.rows / sourceImage.cols * finalWidth;
+  int finalHeight = (double)sourceImage.rows / sourceImage.cols * finalWidth;
 
-  cv::resize(imageCanny, imageResized, { finalWidth, finalHeight });
+  cv::resize(imageCanny, imageResized, {finalWidth, finalHeight});
 
   return imageResized;
 }
 
-cv::Mat detectEdgesThreshold(const cv::Mat &sourceImage, int blurSize, int sigmaX,
-                             int sigmaY, int binaryThreshold) {
+cv::Mat detectEdgesThreshold(const cv::Mat &sourceImage, int blurSize,
+                             int sigmaX, int sigmaY, int binaryThreshold) {
   cv::Mat imageBlurred = blurImage(sourceImage, blurSize, sigmaX, sigmaY);
   cv::Mat imageGray, imageThreshold;
 
@@ -60,12 +60,12 @@ cv::Mat detectEdgesThreshold(const cv::Mat &sourceImage, int blurSize, int sigma
   cv::Mat imageResized;
   if (EDGE_DETECTION_WIDTH == STORED_EDGES_WIDTH) {
     imageResized = imageThreshold;
-  } 
+  }
 
   int finalWidth = STORED_EDGES_WIDTH;
-  int finalHeight = (double) sourceImage.rows / sourceImage.cols * finalWidth;
+  int finalHeight = (double)sourceImage.rows / sourceImage.cols * finalWidth;
 
-  cv::resize(imageThreshold, imageResized, { finalWidth, finalHeight });
+  cv::resize(imageThreshold, imageResized, {finalWidth, finalHeight});
 
   std::vector<std::vector<cv::Point>> contours;
   std::vector<cv::Vec4i> hierarchy;
@@ -95,8 +95,8 @@ boost::dynamic_bitset<unsigned char> edgesToBitset(cv::Mat &edgeMatrix) {
 
   int i = 0;
   for (int y = 0; y < nRows; ++y) {
-    uchar* p = edgeMatrix.ptr<uchar>(y);
-    
+    uchar *p = edgeMatrix.ptr<uchar>(y);
+
     for (int x = 0; x < nCols; ++x) {
       bitset[i] = p[x] != 0;
       ++i;
