@@ -216,7 +216,7 @@ int main(int argc, const char *argv[]) {
     }
 
     if (ImGui::TreeNode("Build")) {
-      ImGui::Text("Currently %i frames", frames.size());
+      ImGui::Text("Currently %i frames", (int)frames.size());
 
       if (ImGui::Button("Add frame")) {
         frames.addFrame(sourceImages);

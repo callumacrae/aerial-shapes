@@ -19,12 +19,13 @@ struct MatchData {
         originY(originY) {}
 };
 
+// todo refactor this
 struct FrameData {
   std::vector<MatchData> frames;
 };
 
-class FrameCollection {
-  std::vector<FrameData> _collection;
+class FrameCollection : public std::vector<FrameData> {
+  std::vector<cv::Mat> _cachedImages;
 
 public:
   FrameCollection() {};
@@ -32,7 +33,10 @@ public:
   void addFrame(ImageList imageList);
   void popFrame();
   void save(std::string &name);
-  int size() const;
+
+  MatchData matchAt(int pos);
+  cv::Mat imageAt(int pos);
+  void preloadAll();
 
   friend std::ostream& operator<<(std::ostream& os, const FrameCollection& frames);
 };

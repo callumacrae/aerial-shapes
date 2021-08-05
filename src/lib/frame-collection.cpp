@@ -1,7 +1,6 @@
 #include "frame-collection.hpp"
 
 FrameCollection::FrameCollection(std::string &name) {
-  std::cout << "Loading " << name << '\n';
   namespace fs = std::filesystem;
 
   std::filesystem::path storePath("assets/collections");
@@ -29,7 +28,7 @@ FrameCollection::FrameCollection(std::string &name) {
           matchDataStrRaw.substr(matchDataStrRaw.find('[') + 1);
       MatchData matchData;
 
-      std::stringstream(matchStream);
+      std::stringstream matchStream(matchDataStr);
       int i = 0;
       while (matchStream.good()) {
         std::string substr;
@@ -53,8 +52,10 @@ FrameCollection::FrameCollection(std::string &name) {
       frameData.frames.push_back(std::move(matchData));
     }
 
-    _collection.push_back(std::move(frameData));
+    push_back(std::move(frameData));
   }
+
+  _cachedImages.resize(size());
 }
 
 void FrameCollection::addFrame(ImageList imageList) {
@@ -68,15 +69,15 @@ void FrameCollection::addFrame(ImageList imageList) {
         image->lastMatch.originX, image->lastMatch.originY);
   }
 
-  _collection.push_back(std::move(frameData));
+  push_back(std::move(frameData));
 }
 
 void FrameCollection::popFrame() {
-  _collection.pop_back();
+  pop_back();
 }
 
 void FrameCollection::save(std::string &name) {
-  if (_collection.empty() || name.empty()) {
+  if (empty() || name.empty()) {
     // todo do something less damaging
     throw std::runtime_error("Invalid save");
   }
@@ -91,8 +92,45 @@ void FrameCollection::save(std::string &name) {
   storeFile << *this;
 }
 
-int FrameCollection::size() const {
-  return _collection.size();
+// todo make this function less dumb
+MatchData FrameCollection::matchAt(int pos) {
+  return at(pos).frames.at(0);
+}
+
+cv::Mat FrameCollection::imageAt(int pos) {
+  cv::Mat cachedImage = _cachedImages.at(pos);
+  if (!cachedImage.empty()) {
+    return cachedImage;
+  }
+
+  MatchData match = matchAt(pos);
+  cv::Mat image = cv::imread(match.path);
+
+  if (image.empty()) {
+    throw std::runtime_error("Couldn't read source image");
+  }
+
+  float realScale = (float)image.cols / STORED_EDGES_WIDTH;
+
+  cv::Rect roi;
+  roi.x = round(match.originX * realScale);
+  roi.y = round(match.originY * realScale);
+  roi.width = round(CANVAS_WIDTH * realScale * match.scale);
+  roi.height = round(CANVAS_HEIGHT * realScale * match.scale);
+
+  cv::Mat cropped = image(roi);
+  cv::Mat scaledImage;
+  cv::resize(cropped, scaledImage, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT));
+
+  _cachedImages.at(pos) = scaledImage;
+
+  return scaledImage;
+}
+
+void FrameCollection::preloadAll() {
+  for (int i = 0; i < size(); ++i) {
+    imageAt(i);
+  }
 }
 
 std::ostream &operator<<(std::ostream &os, const MatchData& matchData) {
@@ -112,7 +150,7 @@ std::ostream &operator<<(std::ostream &os, const FrameData& frameData) {
 }
 
 std::ostream &operator<<(std::ostream &os, const FrameCollection& frames) {
-  for (const FrameData &frameData : frames._collection) {
+  for (const FrameData &frameData : frames) {
     os << frameData << '\n';
   }
   return os;
