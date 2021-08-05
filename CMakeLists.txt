@@ -20,24 +20,29 @@ set(LibraryFiles
   src/lib/image-list.cpp
   src/lib/mat-to-texture.cpp
   src/lib/window.cpp)
+add_executable(build src/build.cpp ${LibraryFiles})
 add_executable(process_images src/process_images.cpp ${LibraryFiles})
 add_executable(match src/match.cpp ${LibraryFiles})
 
 target_precompile_headers(process_images PRIVATE src/precompiled.h)
 target_precompile_headers(match REUSE_FROM process_images)
+target_precompile_headers(build REUSE_FROM process_images)
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 target_link_libraries(process_images ${OpenCV_LIBS})
 target_link_libraries(match ${OpenCV_LIBS})
+target_link_libraries(build ${OpenCV_LIBS})
 
 find_package(Boost 1.76.0 REQUIRED COMPONENTS container)
 target_link_libraries(process_images Boost::container)
 target_link_libraries(match Boost::container)
+target_link_libraries(build Boost::container)
 
 include(cmake/imgui.cmake)
 target_link_libraries(process_images glfw IMGUI GL3W)
 target_link_libraries(match glfw IMGUI GL3W)
+target_link_libraries(build glfw IMGUI GL3W)
 
 FetchContent_Declare(
   linenoise

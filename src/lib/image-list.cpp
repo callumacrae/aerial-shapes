@@ -35,7 +35,7 @@ bool ImageList::getStored() {
     int i = 0;
     while (lineStream.good()) {
       std::string substr;
-      getline(lineStream, substr, ',');
+      std::getline(lineStream, substr, ',');
 
       if (i == 0) {
         path = substr;
