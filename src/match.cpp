@@ -4,6 +4,7 @@
 
 #include "lib/detect-edge.hpp"
 #include "lib/edged-image.hpp"
+#include "lib/frame-collection.hpp"
 #include "lib/image-list.hpp"
 #include "lib/mat-to-texture.hpp"
 #include "lib/window.hpp"
@@ -12,9 +13,11 @@ int main(int argc, const char *argv[]) {
   auto readStart = std::chrono::high_resolution_clock::now();
 
   ImageList sourceImages = ImageList(argv[1]);
-  sourceImages.sortBy("path");
-
   ImageList orderedImages = sourceImages;
+
+  FrameCollection frames;
+  char frameCollectionName[50] = "";
+  bool frameCollectionSaved = false;
 
   int width = 100;
   int height = 550;
@@ -178,25 +181,28 @@ int main(int argc, const char *argv[]) {
     ImGui::NewLine();
 
     changed |= ImGui::Checkbox("Show edges?", &showEdges);
+    ImGui::SameLine();
     changed |= ImGui::Checkbox("Show template?", &showTemplate);
 
     ImGui::NewLine();
 
-    float child_height = ImGui::GetTextLineHeight();
+    if (ImGui::TreeNode("Match info")) {
+      float child_height = ImGui::GetTextLineHeight();
 
-    if (ImGui::BeginChild("path", ImVec2(0, child_height))) {
-      ImGui::Text("Best match: %s", bestMatchImage->path.c_str());
+      if (ImGui::BeginChild("path", ImVec2(0, child_height))) {
+        ImGui::Text("Best match: %s", bestMatchImage->path.c_str());
+      }
+      ImGui::EndChild();
+      ImGui::Text("%% match: %.1f%%", bestMatch.percentage * 100);
+      ImGui::Text("Scale: %.2f", bestMatch.scale);
+      ImGui::Text("Offset: (%i,%i)", bestMatch.originX, bestMatch.originY);
+      ImGui::Text("Runs: %i", runs);
+      ImGui::Text("Match timer: %.2fs (%.2fs avg)", matchElapsed.count(),
+                  matchElapsed.count() / orderedImages.count());
+      ImGui::Text("Preview timer: %.2fs", previewElapsed.count());
+
+      ImGui::TreePop();
     }
-    ImGui::EndChild();
-    ImGui::Text("%% match: %.1f%%", bestMatch.percentage * 100);
-    ImGui::Text("Scale: %.2f", bestMatch.scale);
-    ImGui::Text("Offset: (%i,%i)", bestMatch.originX, bestMatch.originY);
-    ImGui::Text("Runs: %i", runs);
-    ImGui::Text("Match timer: %.2fs (%.2fs avg)", matchElapsed.count(),
-                matchElapsed.count() / orderedImages.count());
-    ImGui::Text("Preview timer: %.2fs", previewElapsed.count());
-
-    ImGui::NewLine();
 
     if (ImGui::TreeNode("All matches")) {
       if (ImGui::BeginChild("matches")) {
@@ -206,6 +212,42 @@ int main(int argc, const char *argv[]) {
         }
       }
       ImGui::EndChild();
+      ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Build")) {
+      ImGui::Text("Currently %i frames", frames.size());
+
+      if (ImGui::Button("Add frame")) {
+        frames.addFrame(sourceImages);
+        frameCollectionSaved = false;
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("Remove last frame")) {
+        frames.popFrame();
+        frameCollectionSaved = false;
+      }
+
+      ImGui::NewLine();
+
+      if (ImGui::InputText("Name", frameCollectionName, 50)) {
+        frameCollectionSaved = false;
+      }
+
+      if (frames.size() && strlen(frameCollectionName)) {
+        if (ImGui::Button("Save")) {
+          std::string name(frameCollectionName);
+          frames.save(name);
+
+          frameCollectionSaved = true;
+        }
+      }
+
+      if (frameCollectionSaved) {
+        ImGui::SameLine();
+        ImGui::Text("Saved");
+      }
+
       ImGui::TreePop();
     }
 

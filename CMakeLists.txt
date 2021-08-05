@@ -16,6 +16,7 @@ set(LibraryFiles
   src/lib/detect-edge.cpp
   src/lib/edged-image.cpp
   src/lib/edit-image-edges.cpp
+  src/lib/frame-collection.cpp
   src/lib/image-list.cpp
   src/lib/mat-to-texture.cpp
   src/lib/window.cpp)

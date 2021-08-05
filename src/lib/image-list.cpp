@@ -159,7 +159,7 @@ int ImageList::matchTo(const cv::Mat &templateImage, ImageMatch *bestMatch,
                        int offsetXStep, int offsetYStep, float minOffsetScale,
                        int maxOffset, float whiteBias) {
   std::atomic_int runs(0);
-  int maxThreads = std::thread::hardware_concurrency(); // todo undefined?
+  int maxThreads = std::thread::hardware_concurrency();
   if (maxThreads == 0) {
     throw std::runtime_error("hardware_concurrency() returning 0, unsupported");
   }
