@@ -2,6 +2,12 @@
 
 #include "edit-image-edges.hpp"
 
+enum ManualEditModes {
+  ManualEditMode_Erase,
+  ManualEditMode_Line,
+  ManualEditMode_Square
+};
+
 std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
   int detectionMode = image.detectionMode;
   int blurSize = image.detectionBlurSize;
@@ -12,6 +18,7 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
   int joinByX = image.detectionCannyJoinByX;
   int joinByY = image.detectionCannyJoinByY;
   int binaryThreshold = image.detectionBinaryThreshold;
+  int manualEditMode = ManualEditMode_Erase;
 
   const cv::Mat sourceImage = cv::imread(image.path);
   cv::Mat templateImage = image.edgesAsMatrix();
@@ -24,24 +31,60 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
   initWindow(sourceImage.cols, sourceImage.rows, title.c_str());
   GLuint image_tex;
 
-  auto generatePreviewTexture = [&]() {
-    // todo don't run on initial run
-    if (detectionMode == ImageEdgeMode_Canny) {
-      templateImage = detectEdgesCanny(sourceImage, blurSize, sigmaX, sigmaY,
-                                       threshold1, threshold2, joinByX,
-                                       joinByY);
-    } else if (detectionMode == ImageEdgeMode_Threshold) {
-      templateImage = detectEdgesThreshold(sourceImage, blurSize, sigmaX,
-                                           sigmaY, binaryThreshold);
-    } else {
-      throw std::invalid_argument("Manual edge editing isn't supported yet");
+  ImVec2 mouseDownPos(-1, -1);
+  ImVec2 mouseCurrentPos(-1, -1);
+
+  auto drawTo = [&](cv::Mat &edges, bool preview = false) {
+    int storedEdgesHeight = (float) STORED_EDGES_WIDTH / edges.cols * edges.rows;
+
+    cv::Point pointA(mouseDownPos.x * STORED_EDGES_WIDTH, mouseDownPos.y * storedEdgesHeight);
+    cv::Point pointB(mouseCurrentPos.x * STORED_EDGES_WIDTH, mouseCurrentPos.y * storedEdgesHeight);
+
+    cv::Scalar color =
+        edges.channels() == 3 ? cv::Scalar(0, 0, 255) : cv::Scalar(255);
+
+    if (manualEditMode == ManualEditMode_Erase) {
+      cv::rectangle(edges, pointA, pointB, cv::Scalar(0), cv::FILLED);
+      if (preview) {
+        cv::rectangle(edges, pointA, pointB, color);
+      }
+    } else if (manualEditMode == ManualEditMode_Square) {
+      cv::rectangle(edges, pointA, pointB, color);
+    } else if (manualEditMode == ManualEditMode_Line) {
+      cv::line(edges, pointA, pointB, color);
+    }
+  };
+
+  auto generatePreviewTexture = [&](bool initial) {
+    // previewTemplateImage is for previewing manual edits
+    cv::Mat previewTemplateImage;
+    bool drawing = detectionMode == ImageEdgeMode_Manual && mouseDownPos.x != -1;
+
+    if (!initial) {
+      if (detectionMode == ImageEdgeMode_Canny) {
+        templateImage =
+            detectEdgesCanny(sourceImage, blurSize, sigmaX, sigmaY, threshold1,
+                             threshold2, joinByX, joinByY);
+      } else if (detectionMode == ImageEdgeMode_Threshold) {
+        templateImage = detectEdgesThreshold(sourceImage, blurSize, sigmaX,
+                                             sigmaY, binaryThreshold);
+      } else if (drawing) {
+        previewTemplateImage = templateImage;
+      }
     }
 
-    cv::Mat edges, mask, scaledEdges, scaledPlusEdges;
-    cv::cvtColor(templateImage, edges, cv::COLOR_GRAY2BGR);
+    cv::Mat &templateImageTmp =
+        previewTemplateImage.empty() ? templateImage : previewTemplateImage;
 
-    cv::threshold(templateImage, mask, 0, 255, cv::THRESH_BINARY);
+    cv::Mat edges, mask, scaledEdges, scaledPlusEdges;
+    cv::cvtColor(templateImageTmp, edges, cv::COLOR_GRAY2BGR);
+
+    cv::threshold(templateImageTmp, mask, 0, 255, cv::THRESH_BINARY);
     edges.setTo(cv::Scalar(255, 0, 0), mask);
+
+    if (drawing) {
+      drawTo(edges, true);
+    }
 
     cv::resize(edges, scaledEdges, sourceImage.size(), 0, 0, cv::INTER_NEAREST);
     cv::bitwise_or(scaledEdges, sourceImage, scaledPlusEdges);
@@ -49,12 +92,33 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
     matToTexture(scaledPlusEdges, &image_tex);
   };
 
-  generatePreviewTexture();
+  generatePreviewTexture(true);
 
   bool save = false;
 
-  openWindow([&](GLFWwindow* window) {
+  openWindow([&](GLFWwindow* window, ImGuiIO& io) {
+    int actualWidth, actualHeight;
+    glfwGetWindowSize(window, &actualWidth, &actualHeight);
+
     bool changed = false;
+
+    if (!io.WantCaptureMouse && detectionMode == ImageEdgeMode_Manual) {
+      if (io.MouseDown[0] && mouseDownPos.x == -1) {
+        mouseDownPos = { io.MousePos.x / actualWidth, io.MousePos.y / actualHeight };
+        mouseCurrentPos = mouseDownPos;
+        changed = true;
+      } else if (mouseDownPos.x != -1) {
+        if (mouseCurrentPos.x != io.MousePos.x || mouseCurrentPos.y != io.MousePos.y) {
+          mouseCurrentPos = { io.MousePos.x / actualWidth, io.MousePos.y / actualHeight };
+          changed = true;
+        }
+
+        if (!io.MouseDown[0]) {
+          drawTo(templateImage);
+          mouseDownPos = {-1, -1};
+        }
+      }
+    }
 
     ImGui::SetNextWindowFocus();
     /* ImGui::ShowDemoWindow(); */
@@ -70,11 +134,13 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
 
     ImGui::NewLine();
 
-    changed |= ImGui::SliderInt("Blur size", &blurSize, 0, 50);
-    changed |= ImGui::SliderInt("Blur sigma X", &sigmaX, 0, 20);
-    changed |= ImGui::SliderInt("Blur sigma Y", &sigmaY, 0, 20);
+    if (detectionMode != ImageEdgeMode_Manual) {
+      changed |= ImGui::SliderInt("Blur size", &blurSize, 0, 50);
+      changed |= ImGui::SliderInt("Blur sigma X", &sigmaX, 0, 20);
+      changed |= ImGui::SliderInt("Blur sigma Y", &sigmaY, 0, 20);
 
-    ImGui::NewLine();
+      ImGui::NewLine();
+    }
 
     if (detectionMode == ImageEdgeMode_Canny) {
       changed |= ImGui::SliderInt("Canny threshold 1", &threshold1, 0, 255);
@@ -84,7 +150,19 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
     } else if (detectionMode == ImageEdgeMode_Threshold) {
       changed |= ImGui::SliderInt("Binary threshold", &binaryThreshold, 0, 255);
     } else {
-      ImGui::Text("Filler text for manual mode");
+      // These don't change the edges, no need to set `changed`
+      ImGui::Text("Tool:");
+      ImGui::SameLine();
+      ImGui::RadioButton("Eraser", &manualEditMode, ManualEditMode_Erase);
+      ImGui::SameLine();
+      ImGui::RadioButton("Line", &manualEditMode, ManualEditMode_Line);
+      ImGui::SameLine();
+      ImGui::RadioButton("Square", &manualEditMode, ManualEditMode_Square);
+
+      if (ImGui::Button("Clear")) {
+        templateImage.setTo(cv::Scalar(0));
+        changed = true;
+      }
     }
 
     ImGui::NewLine();
@@ -125,12 +203,10 @@ std::optional<EdgedImage*> editImageEdges(EdgedImage &image) {
         joinByY++;
       }
 
-      generatePreviewTexture();
+      generatePreviewTexture(false);
     }
 
     // Image window is full screen and non-interactive - basically, a background
-    int actualWidth, actualHeight;
-    glfwGetWindowSize(window, &actualWidth, &actualHeight);
     ImGui::SetNextWindowPos(ImVec2(.0f, .0f));
     ImGui::SetNextWindowSize(ImVec2(actualWidth, actualHeight));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));

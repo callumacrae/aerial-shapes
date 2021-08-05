@@ -79,8 +79,7 @@ void initWindow(int width, int height, const char* title) {
   ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
-// todo pass onFrame by reference?
-void openWindow(const onFrameFn onFrame) {
+void openWindow(const onFrameFn &onFrame) {
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
 
@@ -88,7 +87,9 @@ void openWindow(const onFrameFn onFrame) {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    bool shouldClose = onFrame(window);
+    ImGuiIO& io = ImGui::GetIO();
+
+    bool shouldClose = onFrame(window, io);
     if (shouldClose) {
       glfwSetWindowShouldClose(window, GLFW_TRUE);
       break;
