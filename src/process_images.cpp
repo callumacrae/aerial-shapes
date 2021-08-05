@@ -130,6 +130,13 @@ int main(int argc, const char *argv[]) {
       }
 
       int id = stoi(std::string(arg));
+
+      if (id > imageList.count() - 1) {
+        std::cerr << "That image doesn't exist: highest ID is "
+                  << (imageList.count() - 1) << '\n';
+        continue;
+      }
+
       ImageList::image_store::reference image = imageList.at(id);
 
       std::cout << "Editing: " << image->path << "\n";
