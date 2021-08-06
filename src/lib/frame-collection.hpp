@@ -25,6 +25,7 @@ struct FrameData {
 };
 
 class FrameCollection : public std::vector<FrameData> {
+  std::vector<MatchData> _cachedMatches;
   std::vector<cv::Mat> _cachedImages;
 
 public:

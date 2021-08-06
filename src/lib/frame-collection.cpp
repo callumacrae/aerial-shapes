@@ -55,6 +55,7 @@ FrameCollection::FrameCollection(std::string &name) {
     push_back(std::move(frameData));
   }
 
+  _cachedMatches.resize(size());
   _cachedImages.resize(size());
 }
 
@@ -92,9 +93,33 @@ void FrameCollection::save(std::string &name) {
   storeFile << *this;
 }
 
-// todo make this function less dumb
+// Currently this function uses greedy matching to grab the first match
+// containing an image that hasn't already been used. In the future it would
+// be great if it implemented the hungarian algorithm for better matching.
 MatchData FrameCollection::matchAt(int pos) {
-  return at(pos).frames.at(0);
+  MatchData cachedMatch = _cachedMatches.at(pos);
+  if (!cachedMatch.path.empty()) {
+    return cachedMatch;
+  }
+
+  std::vector<MatchData>::iterator proposedMatch = at(pos).frames.begin();
+  for (; proposedMatch < at(pos).frames.end(); ++proposedMatch) {
+    bool alreadyUsed = false;
+    for (int i = 0; i < pos; ++i) {
+      if (matchAt(i).path == proposedMatch->path) {
+        alreadyUsed = true;
+        break;
+      }
+    }
+
+    if (!alreadyUsed) {
+      break;
+    }
+  }
+
+  _cachedMatches.at(pos) = *proposedMatch;
+
+  return *proposedMatch;
 }
 
 cv::Mat FrameCollection::imageAt(int pos) {
