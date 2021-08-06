@@ -5,7 +5,8 @@
 enum ManualEditModes {
   ManualEditMode_Erase,
   ManualEditMode_Line,
-  ManualEditMode_Square
+  ManualEditMode_Square,
+  ManualEditMode_Circle
 };
 
 std::optional<EdgedImage *> editImageEdges(EdgedImage &image) {
@@ -18,7 +19,7 @@ std::optional<EdgedImage *> editImageEdges(EdgedImage &image) {
   int joinByX = image.detectionCannyJoinByX;
   int joinByY = image.detectionCannyJoinByY;
   int binaryThreshold = image.detectionBinaryThreshold;
-  int manualEditMode = ManualEditMode_Erase;
+  int manualEditMode = ManualEditMode_Line;
 
   const cv::Mat sourceImage = cv::imread(image.path);
   cv::Mat templateImage = image.edgesAsMatrix();
@@ -54,6 +55,11 @@ std::optional<EdgedImage *> editImageEdges(EdgedImage &image) {
       cv::rectangle(edges, pointA, pointB, color);
     } else if (manualEditMode == ManualEditMode_Line) {
       cv::line(edges, pointA, pointB, color);
+    } else if (manualEditMode == ManualEditMode_Circle) {
+      cv::Point center = (pointA + pointB) / 2;
+      int radius =
+          sqrt(pow(pointA.x - pointB.x, 2) + pow(pointA.y - pointB.y, 2)) / 2;
+      cv::circle(edges, center, radius, color);
     }
   };
 
@@ -166,6 +172,8 @@ std::optional<EdgedImage *> editImageEdges(EdgedImage &image) {
       ImGui::RadioButton("Line", &manualEditMode, ManualEditMode_Line);
       ImGui::SameLine();
       ImGui::RadioButton("Square", &manualEditMode, ManualEditMode_Square);
+      ImGui::SameLine();
+      ImGui::RadioButton("Circle", &manualEditMode, ManualEditMode_Circle);
 
       if (ImGui::Button("Clear")) {
         templateImage.setTo(cv::Scalar(0));

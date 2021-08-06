@@ -9,6 +9,11 @@
 #include "lib/mat-to-texture.hpp"
 #include "lib/window.hpp"
 
+enum TemplateShapes {
+  TemplateShape_Rect,
+  TemplateShape_Circle
+};
+
 int main(int argc, const char *argv[]) {
   auto readStart = std::chrono::high_resolution_clock::now();
 
@@ -19,6 +24,7 @@ int main(int argc, const char *argv[]) {
   char frameCollectionName[50] = "";
   bool frameCollectionSaved = false;
 
+  int shape = TemplateShape_Rect;
   int width = 100;
   int height = 550;
   // Algorithm is flawed: it'll probably zoom all the way in if lineWidth > 1
@@ -75,9 +81,16 @@ int main(int argc, const char *argv[]) {
   auto generatePreviewTexture = [&]() {
     cv::Mat canvas = cv::Mat::zeros(CANVAS_HEIGHT, CANVAS_WIDTH, CV_8UC3);
 
-    cv::Point pointA((CANVAS_WIDTH - width) / 2, (CANVAS_HEIGHT - height) / 2);
-    cv::Point pointB((CANVAS_WIDTH + width) / 2, (CANVAS_HEIGHT + height) / 2);
-    cv::rectangle(canvas, pointA, pointB, cv::Scalar(0, 0, 255), lineWidth);
+    if (shape == TemplateShape_Rect) {
+      cv::Point pointA((CANVAS_WIDTH - width) / 2,
+                       (CANVAS_HEIGHT - height) / 2);
+      cv::Point pointB((CANVAS_WIDTH + width) / 2,
+                       (CANVAS_HEIGHT + height) / 2);
+      cv::rectangle(canvas, pointA, pointB, cv::Scalar(0, 0, 255), lineWidth);
+    } else if (shape == TemplateShape_Circle) {
+      cv::Point center(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+      cv::circle(canvas, center, width / 2, cv::Scalar(0, 0, 255), lineWidth);
+    }
 
     cv::Mat greyCanvas;
     cv::cvtColor(canvas, greyCanvas, cv::COLOR_BGR2GRAY);
@@ -164,8 +177,13 @@ int main(int argc, const char *argv[]) {
     ImGui::SetNextWindowFocus();
     ImGui::Begin("Controls");
 
+    changed |= ImGui::RadioButton("Rectangle", &shape, TemplateShape_Rect);
+    ImGui::SameLine();
+    changed |= ImGui::RadioButton("Circle", &shape, TemplateShape_Circle);
     changed |= ImGui::SliderInt("Width", &width, 0, CANVAS_WIDTH + 50);
-    changed |= ImGui::SliderInt("Height", &height, 0, CANVAS_HEIGHT + 50);
+    if (shape == TemplateShape_Rect) {
+      changed |= ImGui::SliderInt("Height", &height, 0, CANVAS_HEIGHT + 50);
+    }
     /* changed |= ImGui::SliderInt("Line width", &lineWidth, 0, 50); */
 
     ImGui::NewLine();
