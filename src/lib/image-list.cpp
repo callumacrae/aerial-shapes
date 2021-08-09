@@ -166,6 +166,7 @@ int ImageList::matchTo(const cv::Mat &templateImage, ImageMatch *bestMatch,
   int threads = std::min(maxThreads, count());
 
   std::vector<std::thread> threadVector;
+  threadVector.reserve(threads);
 
   std::atomic_int imageIndex(0);
   std::mutex bestMatchMutex;

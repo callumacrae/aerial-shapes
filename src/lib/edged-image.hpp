@@ -13,10 +13,9 @@ struct ImageMatch {
 class EdgedImage {
   using bitset = boost::dynamic_bitset<unsigned char>;
 
-  void matchToStep(const cv::Mat &templateImage,
-                   const std::vector<uchar> &edgesVec, ImageMatch *match,
-                   float scale, int originX, int originY, int rowStep = 1,
-                   float whiteBias = MATCH_WHITE_BIAS) const;
+  void matchToStep(const cv::Mat &templateImage, const uchar edgesAry[],
+                   ImageMatch *match, float scale, int originX, int originY,
+                   int rowStep = 1, float whiteBias = MATCH_WHITE_BIAS) const;
 
   cv::Mat originalImage;
 
