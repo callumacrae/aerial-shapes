@@ -29,7 +29,7 @@ public:
   ImageList(std::string dirPath);
 
   void generate();
-  void save();
+  void save(bool async = true);
   int sync();
 
   int matchTo(const cv::Mat &templateImage, ImageMatch *match,

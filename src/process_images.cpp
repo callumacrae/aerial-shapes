@@ -169,9 +169,13 @@ int main(int argc, const char *argv[]) {
 
       imageList.erase(id);
       imageList.save();
-      std::cout << "Image removed from store: delete file manually.\n";
+      std::cout << "Image removed from store: delete file manually\n";
     } else if (command == "sort") {
       imageList.sortBy("path");
+      std::cout << "Sorted by file path - this will not be saved to store\n";
+    } else if (command == "save") {
+      imageList.save(false);
+      std::cout << "Store saved\n";
     } else {
       std::cout << "?\n";
     }

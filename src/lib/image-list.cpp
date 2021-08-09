@@ -141,16 +141,27 @@ void ImageList::addFile(const std::filesystem::directory_entry &file) {
                                                sourceImage.rows, edges));
 }
 
-void ImageList::save() {
-  std::filesystem::path storePath{dirPath};
-  storePath.append(".store");
-  std::ofstream storeFile(storePath);
-  if (!storeFile) {
-    throw std::runtime_error("Failed to open store file.");
-  }
+// If saving before quitting, make sure you call async=false or you might
+// destroy the store file
+void ImageList::save(bool async) {
+  auto threadFn = [&]() {
+    std::filesystem::path storePath{dirPath};
+    storePath.append(".store");
+    std::ofstream storeFile(storePath);
+    if (!storeFile) {
+      throw std::runtime_error("Failed to open store file.");
+    }
 
-  for (const std::shared_ptr<EdgedImage> &image : store) {
-    storeFile << *image << '\n';
+    for (const std::shared_ptr<EdgedImage> &image : store) {
+      storeFile << *image << '\n';
+    }
+  };
+
+  if (async) {
+    std::thread saveThread(threadFn);
+    saveThread.detach();
+  } else {
+    threadFn();
   }
 }
 
