@@ -88,7 +88,7 @@ void ImageList::generate() {
   for (const auto &file : fs::directory_iterator(dirPath)) {
     if (std::string(file.path().filename())[0] == '.') {
       std::cout << "Skipping: " << file.path() << '\n';
-      return;
+      continue;
     }
 
     addFile(file);
@@ -231,6 +231,10 @@ ImageList::image_store::iterator ImageList::end() { return store.end(); }
 
 ImageList::image_store::reference ImageList::at(size_t pos) {
   return store.at(pos);
+}
+
+void ImageList::erase(size_t pos) {
+  store.erase(begin() + pos);
 }
 
 int ImageList::count() const { return store.size(); }

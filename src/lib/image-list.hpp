@@ -48,5 +48,6 @@ public:
   image_store::iterator end();
   image_store::reference at(size_t pos);
 
+  void erase(size_t pos);
   int count() const;
 };

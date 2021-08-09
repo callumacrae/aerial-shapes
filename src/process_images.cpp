@@ -19,7 +19,6 @@ int main(int argc, const char *argv[]) {
   std::cout << std::fixed << std::setprecision(2);
 
   ImageList imageList(argv[1]);
-  imageList.sortBy("path");
 
   if (imageList.count()) {
     auto readFinish = std::chrono::high_resolution_clock::now();
@@ -150,6 +149,29 @@ int main(int argc, const char *argv[]) {
       } else {
         std::cout << "Changes discarded\n";
       }
+    } else if (command == "rm") {
+      if (arg.empty()) {
+        std::cerr << "rm needs argument\n";
+        continue;
+      }
+
+      int id = stoi(std::string(arg));
+
+      if (id > imageList.count() - 1) {
+        std::cerr << "That image doesn't exist: highest ID is "
+                  << (imageList.count() - 1) << '\n';
+        continue;
+      }
+
+      ImageList::image_store::reference image = imageList.at(id);
+
+      std::cout << "Removing: " << image->path << "\n";
+
+      imageList.erase(id);
+      imageList.save();
+      std::cout << "Image removed from store: delete file manually.\n";
+    } else if (command == "sort") {
+      imageList.sortBy("path");
     } else {
       std::cout << "?\n";
     }

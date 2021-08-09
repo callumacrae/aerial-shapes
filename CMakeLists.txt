@@ -2,13 +2,17 @@ cmake_minimum_required(VERSION 3.14)
 
 include(FetchContent)
 
-set(CMAKE_BUILD_TYPE debug)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE debug)
+endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_HOME_DIRECTORY}/out")
 
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "-fsanitize=address,undefined")
+# set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address,undefined")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 project(AerialShapes)
 
