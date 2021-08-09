@@ -30,14 +30,15 @@ class FrameCollection : public std::vector<FrameData> {
 
 public:
   FrameCollection() {};
-  FrameCollection(std::string &name);
+  FrameCollection(const std::string &name);
   void addFrame(ImageList imageList);
   void popFrame();
-  void save(std::string &name);
+  void save(const std::string &name);
 
   MatchData matchAt(int pos);
   cv::Mat imageAt(int pos);
   void preloadAll();
+  void writeImages(const std::string &name);
 
   friend std::ostream& operator<<(std::ostream& os, const FrameCollection& frames);
 };

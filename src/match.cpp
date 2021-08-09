@@ -9,10 +9,7 @@
 #include "lib/mat-to-texture.hpp"
 #include "lib/window.hpp"
 
-enum TemplateShapes {
-  TemplateShape_Rect,
-  TemplateShape_Circle
-};
+enum TemplateShapes { TemplateShape_Rect, TemplateShape_Circle };
 
 int main(int argc, const char *argv[]) {
   auto readStart = std::chrono::high_resolution_clock::now();
@@ -46,27 +43,6 @@ int main(int argc, const char *argv[]) {
 
   std::cout << "Loaded " << sourceImages.count() << " images from store in "
             << readElapsed.count() << "s\n";
-
-  if (argv[2]) {
-    cv::Mat templateImage = cv::imread(argv[2], cv::IMREAD_GRAYSCALE);
-
-    if (templateImage.empty()) {
-      throw std::runtime_error("Couldn't read template image");
-    }
-
-    ImageMatch bestMatch;
-    // Warning: sourceImages is managing this memory
-    EdgedImage *bestMatchImage;
-
-    sourceImages.matchTo(templateImage, &bestMatch, &bestMatchImage,
-                         offsetScaleStep, offsetXStep, offsetYStep,
-                         minOffsetScale, maxOffset, whiteBias);
-
-    std::cout << "\nBest match is " << bestMatchImage->path << " with "
-              << (bestMatch.percentage * 100) << "%\n";
-
-    return 0;
-  }
 
   initWindow(OUTPUT_WIDTH, OUTPUT_HEIGHT, "Match debugger");
   GLuint image_tex;

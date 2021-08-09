@@ -1,10 +1,11 @@
 #include "frame-collection.hpp"
 
-FrameCollection::FrameCollection(std::string &name) {
+FrameCollection::FrameCollection(const std::string &name) {
   namespace fs = std::filesystem;
 
   std::filesystem::path storePath("assets/collections");
   storePath.append(name);
+  storePath.append(".frame-data");
   std::ifstream storeFile(storePath);
 
   if (!storeFile) {
@@ -73,18 +74,23 @@ void FrameCollection::addFrame(ImageList imageList) {
   push_back(std::move(frameData));
 }
 
-void FrameCollection::popFrame() {
-  pop_back();
-}
+void FrameCollection::popFrame() { pop_back(); }
 
-void FrameCollection::save(std::string &name) {
+void FrameCollection::save(const std::string &name) {
+  namespace fs = std::filesystem;
+
   if (empty() || name.empty()) {
     // todo do something less damaging
     throw std::runtime_error("Invalid save");
   }
 
-  std::filesystem::path storePath("assets/collections");
+  fs::path storePath("assets/collections");
   storePath.append(name);
+
+  fs::create_directory(storePath);
+
+  storePath.append(".frame-data");
+
   std::ofstream storeFile(storePath);
   if (!storeFile) {
     throw std::runtime_error("Failed to open store file.");
@@ -158,13 +164,27 @@ void FrameCollection::preloadAll() {
   }
 }
 
-std::ostream &operator<<(std::ostream &os, const MatchData& matchData) {
+void FrameCollection::writeImages(const std::string &name) {
+  for (size_t i = 0; i < size(); ++i) {
+    cv::Mat image = imageAt(i);
+
+    char frameName[8];
+    sprintf(frameName, "%03d.jpg", (int)i);
+    std::filesystem::path imagePath("assets/collections");
+    imagePath.append(name);
+    imagePath.append(frameName);
+
+    cv::imwrite(imagePath.string(), image);
+  }
+}
+
+std::ostream &operator<<(std::ostream &os, const MatchData &matchData) {
   os << matchData.path << ',' << matchData.percentage << ',' << matchData.scale
-    << ',' << matchData.originX << ',' << matchData.originY;
+     << ',' << matchData.originX << ',' << matchData.originY;
   return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const FrameData& frameData) {
+std::ostream &operator<<(std::ostream &os, const FrameData &frameData) {
   for (int i = 0; i < frameData.frames.size(); ++i) {
     if (i != 0) {
       os << ',';
@@ -174,7 +194,7 @@ std::ostream &operator<<(std::ostream &os, const FrameData& frameData) {
   return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const FrameCollection& frames) {
+std::ostream &operator<<(std::ostream &os, const FrameCollection &frames) {
   for (const FrameData &frameData : frames) {
     os << frameData << '\n';
   }

@@ -20,6 +20,19 @@ int main(int argc, const char *argv[]) {
 
   std::cout << "Preloaded frames in " << loadDuration.count() << "s\n";
 
+  if (argv[2] && strcmp(argv[2], "--write") == 0) {
+    auto writeBegin = std::chrono::high_resolution_clock::now();
+
+    frames.writeImages(name);
+
+    auto writeFinish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> writeDuration = writeFinish - writeBegin;
+    std::cout << "Written " << frames.size() << " frames to disk in "
+      << writeDuration.count() << "s\n";
+
+    return 0;
+  }
+
   int frameId = 0;
   bool playing = false;
   int fps = 5;
