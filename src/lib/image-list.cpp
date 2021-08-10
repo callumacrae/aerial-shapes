@@ -1,4 +1,5 @@
 #include "image-list.hpp"
+#include "bitset-serialise.hpp"
 
 ImageList::ImageList(std::string dirPath) : dirPath(dirPath) {
   namespace fs = std::filesystem;
@@ -24,7 +25,7 @@ bool ImageList::getStored() {
 
   while (std::getline(storeFile, line)) {
     std::string path;
-    int width, height;
+    int width, height, bitsetSize;
     boost::dynamic_bitset<unsigned char> edges;
 
     int detectionMode, detectionBlurSize, detectionBlurSigmaX,
@@ -44,24 +45,26 @@ bool ImageList::getStored() {
       } else if (i == 2) {
         height = std::stoi(substr);
       } else if (i == 3) {
-        edges = boost::dynamic_bitset<unsigned char>(substr);
+        bitsetSize = std::stoi(substr);
       } else if (i == 4) {
-        detectionMode = std::stoi(substr);
+        edges = stringToBitset(substr.c_str(), bitsetSize);
       } else if (i == 5) {
-        detectionBlurSize = std::stoi(substr);
+        detectionMode = std::stoi(substr);
       } else if (i == 6) {
-        detectionBlurSigmaX = std::stoi(substr);
+        detectionBlurSize = std::stoi(substr);
       } else if (i == 7) {
-        detectionBlurSigmaY = std::stoi(substr);
+        detectionBlurSigmaX = std::stoi(substr);
       } else if (i == 8) {
-        detectionCannyThreshold1 = std::stoi(substr);
+        detectionBlurSigmaY = std::stoi(substr);
       } else if (i == 9) {
-        detectionCannyThreshold2 = std::stoi(substr);
+        detectionCannyThreshold1 = std::stoi(substr);
       } else if (i == 10) {
-        detectionBinaryThreshold = std::stoi(substr);
+        detectionCannyThreshold2 = std::stoi(substr);
       } else if (i == 11) {
-        detectionCannyJoinByX = std::stoi(substr);
+        detectionBinaryThreshold = std::stoi(substr);
       } else if (i == 12) {
+        detectionCannyJoinByX = std::stoi(substr);
+      } else if (i == 13) {
         detectionCannyJoinByY = std::stoi(substr);
       }
 
@@ -170,8 +173,8 @@ int ImageList::matchTo(const cv::Mat &templateImage, ImageMatch *bestMatch,
                        int offsetXStep, int offsetYStep, float minOffsetScale,
                        int maxOffset, float whiteBias) {
   std::atomic_int runs(0);
-  int maxThreads = std::thread::hardware_concurrency();
-  if (maxThreads == 0) {
+  int maxThreads = std::thread::hardware_concurrency() - 1;
+  if (maxThreads == -1) {
     throw std::runtime_error("hardware_concurrency() returning 0, unsupported");
   }
   int threads = std::min(maxThreads, count());

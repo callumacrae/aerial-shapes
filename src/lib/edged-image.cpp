@@ -166,11 +166,11 @@ cv::Mat EdgedImage::getOriginal(bool cache) {
 
 std::ostream &operator<<(std::ostream &os, const EdgedImage &image) {
   os << image.path << ',' << image.width << ',' << image.height << ','
-     << image.edges << ',' << image.detectionMode << ','
-     << image.detectionBlurSize << ',' << image.detectionBlurSigmaX << ','
-     << image.detectionBlurSigmaY << ',' << image.detectionCannyThreshold1
-     << ',' << image.detectionCannyThreshold2 << ','
-     << image.detectionBinaryThreshold << ',' << image.detectionCannyJoinByX
-     << ',' << image.detectionCannyJoinByY;
+     << image.edges.size() << ',' << bitsetToString(image.edges) << ','
+     << image.detectionMode << ',' << image.detectionBlurSize << ','
+     << image.detectionBlurSigmaX << ',' << image.detectionBlurSigmaY << ','
+     << image.detectionCannyThreshold1 << ',' << image.detectionCannyThreshold2
+     << ',' << image.detectionBinaryThreshold << ','
+     << image.detectionCannyJoinByX << ',' << image.detectionCannyJoinByY;
   return os;
 }

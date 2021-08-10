@@ -17,6 +17,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 project(AerialShapes)
 
 set(LibraryFiles
+  src/lib/bitset-serialise.cpp
   src/lib/detect-edge.cpp
   src/lib/edged-image.cpp
   src/lib/edit-image-edges.cpp

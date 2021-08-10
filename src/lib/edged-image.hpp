@@ -5,6 +5,8 @@
 #include "../precompiled.h"
 #include "../config.h"
 
+#include "bitset-serialise.hpp"
+
 struct ImageMatch {
   float percentage, scale;
   int originX, originY;
