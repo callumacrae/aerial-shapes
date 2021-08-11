@@ -8,7 +8,7 @@
 #include "bitset-serialise.hpp"
 
 struct ImageMatch {
-  float percentage, scale;
+  float percentage = 0, scale;
   int originX, originY;
 };
 

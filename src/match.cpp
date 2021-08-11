@@ -213,7 +213,6 @@ int main(int argc, const char *argv[]) {
           if (ImGui::SmallButton("Preview")) {
             previewImage = image.get();
             changed = true;
-            std::cout << "PREVIEWING\n";
           }
           ImGui::PopID();
           ImGui::SameLine();
