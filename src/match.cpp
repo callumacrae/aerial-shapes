@@ -50,6 +50,7 @@ int main(int argc, const char *argv[]) {
   ImageMatch bestMatch;
   // Warning: sourceImages is managing this memory
   EdgedImage *bestMatchImage;
+  EdgedImage *previewImage;
   int runs;
   std::chrono::duration<float> matchElapsed;
   std::chrono::duration<float> previewElapsed;
@@ -74,18 +75,25 @@ int main(int argc, const char *argv[]) {
     bestMatch = ImageMatch();
     bestMatchImage = nullptr;
 
-    auto matchStart = std::chrono::high_resolution_clock::now();
+    if (previewImage != nullptr) {
+      bestMatch = previewImage->lastMatch;
+      bestMatchImage = previewImage;
+      previewImage = nullptr;
+      matchElapsed = std::chrono::seconds(0);
+    } else {
+      auto matchStart = std::chrono::high_resolution_clock::now();
 
-    runs = sourceImages.matchTo(greyCanvas, &bestMatch, &bestMatchImage,
-                                offsetScaleStep, offsetXStep, offsetYStep,
-                                minOffsetScale, maxOffset, whiteBias);
+      runs = sourceImages.matchTo(greyCanvas, &bestMatch, &bestMatchImage,
+                                  offsetScaleStep, offsetXStep, offsetYStep,
+                                  minOffsetScale, maxOffset, whiteBias);
 
-    auto matchFinish = std::chrono::high_resolution_clock::now();
-    matchElapsed = matchFinish - matchStart;
+      auto matchFinish = std::chrono::high_resolution_clock::now();
+      matchElapsed = matchFinish - matchStart;
+
+      orderedImages.sortBy("match-percentage");
+    }
 
     auto previewStart = std::chrono::high_resolution_clock::now();
-
-    orderedImages.sortBy("match-percentage");
 
     cv::Mat originalImage = bestMatchImage->getOriginal();
 
@@ -201,6 +209,14 @@ int main(int argc, const char *argv[]) {
     if (ImGui::TreeNode("All matches")) {
       if (ImGui::BeginChild("matches")) {
         for (auto &image : orderedImages) {
+          ImGui::PushID(image->path.c_str());
+          if (ImGui::SmallButton("Preview")) {
+            previewImage = image.get();
+            changed = true;
+            std::cout << "PREVIEWING\n";
+          }
+          ImGui::PopID();
+          ImGui::SameLine();
           ImGui::Text("%.1f%%: %s", image->lastMatch.percentage * 100,
                       image->path.c_str());
         }
