@@ -25,8 +25,12 @@ struct FrameData {
 };
 
 class FrameCollection : public std::vector<FrameData> {
-  std::vector<MatchData> _cachedMatches;
+  std::vector<bool> _isCachedMatches;
+  std::vector<std::vector<MatchData>::iterator> _cachedMatches;
+  std::vector<bool> _isCachedImages;
   std::vector<cv::Mat> _cachedImages;
+
+  std::vector<MatchData>::iterator _uncached;
 
 public:
   FrameCollection() {};
@@ -35,8 +39,12 @@ public:
   void popFrame();
   void save(const std::string &name);
 
-  MatchData matchAt(int pos);
+  std::vector<MatchData>::iterator matchAt(int pos);
+  std::vector<MatchData>* matchesAt(int pos);
   cv::Mat imageAt(int pos);
+  cv::Mat imageFor(std::vector<MatchData>::iterator match);
+  void forceMatch(int pos, std::vector<MatchData>::iterator match);
+  void removeMatch(int pos, std::vector<MatchData>::iterator match);
   void preloadAll();
   void writeImages(const std::string &name);
 

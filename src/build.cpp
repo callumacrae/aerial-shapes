@@ -33,16 +33,23 @@ int main(int argc, const char *argv[]) {
     return 0;
   }
 
+  bool edited = false;
+  bool saved = false;
   int frameId = 0;
   bool playing = false;
   int fps = 5;
 
   initWindow(OUTPUT_WIDTH, OUTPUT_HEIGHT, "Build preview");
   GLuint image_tex;
+  std::vector<MatchData> *matchesForFrame;
+  bool doPreview = false;
+  std::vector<MatchData>::iterator previewMatch;
 
   auto generateTexture = [&]() {
-    cv::Mat image = frames.imageAt(frameId);
+    cv::Mat image = doPreview ? frames.imageFor(previewMatch) : frames.imageAt(frameId);
+    doPreview = false;
     matToTexture(image, &image_tex);
+    matchesForFrame = frames.matchesAt(frameId);
   };
 
   generateTexture();
@@ -65,6 +72,16 @@ int main(int argc, const char *argv[]) {
     ImGui::Begin("Controls");
 
     changed |= ImGui::SliderInt("Frame ID", &frameId, 0, frames.size() - 1);
+    ImGui::SameLine();
+    if (ImGui::SmallButton("-") && frameId > 0) {
+      --frameId;
+      changed = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::SmallButton("+") && frameId < frames.size() - 1) {
+      ++frameId;
+      changed = true;
+    }
 
     ImGui::NewLine();
 
@@ -77,9 +94,56 @@ int main(int argc, const char *argv[]) {
       ImGui::SliderInt("FPS", &fps, 1, 30);
     }
 
+    ImGui::NewLine();
+
+    if (edited || saved) {
+      if (edited && ImGui::Button("Save changes")) {
+        frames.save(name);
+        edited = false;
+        saved = true;
+      } else if (saved) {
+        ImGui::Text("Saved!");
+      }
+
+      ImGui::NewLine();
+    }
+
+    if (ImGui::TreeNode("All matches")) {
+      if (ImGui::BeginChild("matches")) {
+        for (std::vector<MatchData>::iterator match = matchesForFrame->begin();
+            match != matchesForFrame->end(); ++match) {
+          ImGui::PushID(match->path.c_str());
+          if (ImGui::SmallButton("Preview")) {
+            previewMatch = match;
+            doPreview = true;
+            changed = true;
+          }
+          ImGui::SameLine();
+          if (ImGui::SmallButton("y")) {
+            frames.forceMatch(frameId, match);
+            changed = true;
+            // Stop usages of match below segfaulting
+            match = matchesForFrame->begin();
+            edited = true;
+          }
+          ImGui::SameLine();
+          if (ImGui::SmallButton("n")) {
+            frames.removeMatch(frameId, match);
+            edited = true;
+          }
+          ImGui::PopID();
+          ImGui::SameLine();
+          ImGui::Text("%.1f%%: %s", match->percentage * 100, match->path.c_str());
+        }
+      }
+      ImGui::EndChild();
+      ImGui::TreePop();
+    }
+
     ImGui::End();
 
     if (changed) {
+      saved = false;
       generateTexture();
     }
 

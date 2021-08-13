@@ -165,6 +165,16 @@ int main(int argc, const char *argv[]) {
     ImGui::SameLine();
     changed |= ImGui::RadioButton("Circle", &shape, TemplateShape_Circle);
     changed |= ImGui::SliderInt("Width", &width, 0, CANVAS_WIDTH + 50);
+    ImGui::SameLine();
+    if (ImGui::SmallButton("-##lesswidth")) {
+      width--;
+      changed = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::SmallButton("+##morewidth")) {
+      width++;
+      changed = true;
+    }
     if (shape == TemplateShape_Rect) {
       changed |= ImGui::SliderInt("Height", &height, 0, CANVAS_HEIGHT + 50);
     }
