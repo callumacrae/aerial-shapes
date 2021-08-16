@@ -8,6 +8,38 @@
 #include "lib/edit-image-edges.hpp"
 #include "lib/image-list.hpp"
 
+std::optional<int> imageFromArg(ImageList &imageList, const std::string &arg) {
+  if (arg.empty()) {
+    std::cerr << "Argument required\n";
+    return {};
+  }
+
+  int id = -1;
+  try {
+    id = stoi(arg);
+  } catch (std::invalid_argument) {
+    for (size_t i = 0; i < imageList.count(); ++i) {
+      if (imageList.at(i)->path == arg) {
+        id = i;
+        break;
+      }
+    }
+  }
+
+  if (id == -1) {
+    std::cerr << "Image not found\n";
+    return {};
+  }
+
+  if (id > imageList.count() - 1) {
+    std::cerr << "That image doesn't exist: highest ID is "
+      << (imageList.count() - 1) << '\n';
+    return {};
+  }
+
+  return id;
+}
+
 int main(int argc, const char *argv[]) {
   auto readStart = std::chrono::high_resolution_clock::now();
 
@@ -123,20 +155,13 @@ int main(int argc, const char *argv[]) {
 
       std::cout << '\n';
     } else if (command == "edit") {
-      if (arg.empty()) {
-        std::cerr << "edit needs argument\n";
+      auto maybeImage = imageFromArg(imageList, std::string(arg));
+
+      if (!maybeImage.has_value()) {
         continue;
       }
 
-      int id = stoi(std::string(arg));
-
-      if (id > imageList.count() - 1) {
-        std::cerr << "That image doesn't exist: highest ID is "
-                  << (imageList.count() - 1) << '\n';
-        continue;
-      }
-
-      ImageList::image_store::reference image = imageList.at(id);
+      std::shared_ptr<EdgedImage> &image = imageList.at(maybeImage.value());
 
       std::cout << "Editing: " << image->path << "\n";
 
@@ -150,26 +175,34 @@ int main(int argc, const char *argv[]) {
         std::cout << "Changes discarded\n";
       }
     } else if (command == "rm") {
-      if (arg.empty()) {
-        std::cerr << "rm needs argument\n";
+      auto maybeImage = imageFromArg(imageList, std::string(arg));
+
+      if (!maybeImage.has_value()) {
         continue;
       }
 
-      int id = stoi(std::string(arg));
+      int id = maybeImage.value();
+      std::string path = imageList.at(id)->path;
 
-      if (id > imageList.count() - 1) {
-        std::cerr << "That image doesn't exist: highest ID is "
-                  << (imageList.count() - 1) << '\n';
-        continue;
-      }
-
-      ImageList::image_store::reference image = imageList.at(id);
-
-      std::cout << "Removing: " << image->path << "\n";
+      std::cout << "Removing: " << path << "\n";
 
       imageList.erase(id);
       imageList.save();
-      std::cout << "Image removed from store: delete file manually\n";
+
+      char prompt[60];
+      sprintf(prompt, "Image removed from store: delete file from disk? (Y/n) ");
+
+      std::string line;
+      auto quit = linenoise::Readline(prompt, line);
+
+      if (quit) {
+        break;
+      }
+
+      if (line != "n") {
+        std::filesystem::remove(path);
+        std::cout << "File removed\n";
+      }
     } else if (command == "sort") {
       imageList.sortBy("path");
       std::cout << "Sorted by file path - this will not be saved to store\n";

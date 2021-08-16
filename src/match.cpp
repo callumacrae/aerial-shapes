@@ -224,10 +224,14 @@ int main(int argc, const char *argv[]) {
             previewImage = image.get();
             changed = true;
           }
-          ImGui::PopID();
           ImGui::SameLine();
           ImGui::Text("%.1f%%: %s", image->lastMatch.percentage * 100,
                       image->path.c_str());
+          ImGui::SameLine();
+          if (ImGui::SmallButton("copy")) {
+            ImGui::SetClipboardText(image->path.c_str());
+          }
+          ImGui::PopID();
         }
       }
       ImGui::EndChild();

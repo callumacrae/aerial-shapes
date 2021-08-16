@@ -131,9 +131,13 @@ int main(int argc, const char *argv[]) {
             frames.removeMatch(frameId, match);
             edited = true;
           }
-          ImGui::PopID();
           ImGui::SameLine();
           ImGui::Text("%.1f%%: %s", match->percentage * 100, match->path.c_str());
+          ImGui::SameLine();
+          if (ImGui::SmallButton("copy")) {
+            ImGui::SetClipboardText(match->path.c_str());
+          }
+          ImGui::PopID();
         }
       }
       ImGui::EndChild();
