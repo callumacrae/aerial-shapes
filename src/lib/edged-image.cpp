@@ -59,13 +59,24 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
             int offsetY = offsetYRoot * offsetYMultiplier;
 
             ImageMatch match;
-            matchToStep(templateImage, edgesAry, &match, scale,
-                        originX + offsetX, originY + offsetY, 10, whiteBias);
+            if (runs != 0) {
+              matchToStep(templateImage, edgesAry, &match, scale,
+                          originX + offsetX, originY + offsetY, 10, 1,
+                          whiteBias);
+
+              // If partial match on rows isn't good enough, run again on cols
+              if (match.percentage < 0.5 ||
+                  match.percentage < bestMatch.percentage - 0.1) {
+                matchToStep(templateImage, edgesAry, &match, scale,
+                            originX + offsetX, originY + offsetY, 1, 10,
+                            whiteBias);
+              }
+            }
 
             if (runs == 0 || (match.percentage > 0.5 &&
                               match.percentage > bestMatch.percentage - 0.1)) {
               matchToStep(templateImage, edgesAry, &match, scale,
-                          originX + offsetX, originY + offsetY, 1, whiteBias);
+                          originX + offsetX, originY + offsetY, 1, 1, whiteBias);
               fullRuns++;
 
               if (match.percentage > bestMatch.percentage) {
@@ -94,11 +105,10 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
   return runs;
 }
 
-// TODO NEEDS TO RUN ROWSTEP ON COLS TOO
 void EdgedImage::matchToStep(const cv::Mat &templateImage,
                              const uchar edgesAry[], ImageMatch *match,
                              float scale, int originX, int originY, int rowStep,
-                             float whiteBias) const {
+                             int colStep, float whiteBias) const {
   int testedBlack = 0;
   int matchingBlack = 0;
   int testedWhite = 0;
@@ -107,7 +117,7 @@ void EdgedImage::matchToStep(const cv::Mat &templateImage,
   for (int y = 0; y < templateImage.rows; y += rowStep) {
     const uchar *p = templateImage.ptr<uchar>(y);
 
-    for (int x = 0; x < templateImage.cols; ++x) {
+    for (int x = 0; x < templateImage.cols; x += colStep) {
       bool templatePixVal = p[x] != 0;
 
       int transformedX = originX + floor((float)x * scale);

@@ -183,7 +183,7 @@ int main(int argc, const char *argv[]) {
     ImGui::NewLine();
 
     changed |=
-        ImGui::SliderFloat("Offset scale step", &offsetScaleStep, 0.05, 0.5);
+        ImGui::SliderFloat("Offset scale step", &offsetScaleStep, 0.025, 0.5);
     changed |= ImGui::SliderInt("Offset x step", &offsetXStep, 1, 20);
     changed |= ImGui::SliderInt("Offset y step", &offsetYStep, 1, 20);
     changed |= ImGui::SliderFloat("Min offset scale", &minOffsetScale, 0, 0.9);
