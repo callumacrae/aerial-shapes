@@ -75,12 +75,14 @@ int main(int argc, const char *argv[]) {
 
     changed |= ImGui::SliderInt("Frame ID", &frameId, 0, frames.size() - 1);
     ImGui::SameLine();
-    if (ImGui::SmallButton("-") && frameId > 0) {
+    if ((ImGui::SmallButton("-") || ImGui::IsKeyPressed(GLFW_KEY_LEFT, false))
+        && frameId > 0) {
       --frameId;
       changed = true;
     }
     ImGui::SameLine();
-    if (ImGui::SmallButton("+") && frameId < frames.size() - 1) {
+    if ((ImGui::SmallButton("+") || ImGui::IsKeyPressed(GLFW_KEY_RIGHT, false))
+        && frameId < frames.size() - 1) {
       ++frameId;
       changed = true;
     }
