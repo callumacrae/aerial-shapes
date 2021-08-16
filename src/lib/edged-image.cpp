@@ -94,6 +94,7 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
   return runs;
 }
 
+// TODO NEEDS TO RUN ROWSTEP ON COLS TOO
 void EdgedImage::matchToStep(const cv::Mat &templateImage,
                              const uchar edgesAry[], ImageMatch *match,
                              float scale, int originX, int originY, int rowStep,

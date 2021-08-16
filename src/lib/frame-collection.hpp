@@ -32,6 +32,8 @@ class FrameCollection : public std::vector<FrameData> {
 
   std::vector<MatchData>::iterator _uncached;
 
+  void purgeCache();
+
 public:
   FrameCollection() {};
   FrameCollection(const std::string &name);
@@ -45,6 +47,10 @@ public:
   cv::Mat imageFor(std::vector<MatchData>::iterator match);
   void forceMatch(int pos, std::vector<MatchData>::iterator match);
   void removeMatch(int pos, std::vector<MatchData>::iterator match);
+  void editMatchScale(int pos, float newScale);
+  void editMatchOriginX(int pos, int originX);
+  void editMatchOriginY(int pos, int originY);
+
   void preloadAll();
   void writeImages(const std::string &name);
 

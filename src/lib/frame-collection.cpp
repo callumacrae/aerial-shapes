@@ -174,13 +174,17 @@ cv::Mat FrameCollection::imageFor(std::vector<MatchData>::iterator match) {
   return scaledImage;
 }
 
+void FrameCollection::purgeCache() {
+  std::fill(_isCachedMatches.begin(), _isCachedMatches.end(), false);
+  std::fill(_isCachedImages.begin(), _isCachedImages.end(), false);
+}
+
 void FrameCollection::forceMatch(int pos, std::vector<MatchData>::iterator match) {
   MatchData matchCopy = *match;
   at(pos).frames.clear();
   at(pos).frames.push_back(matchCopy);
 
-  std::fill(_isCachedMatches.begin(), _isCachedMatches.end(), false);
-  std::fill(_isCachedImages.begin(), _isCachedImages.end(), false);
+  purgeCache();
 
   match = at(pos).frames.begin();
 
@@ -204,6 +208,30 @@ void FrameCollection::forceMatch(int pos, std::vector<MatchData>::iterator match
 
 void FrameCollection::removeMatch(int pos, std::vector<MatchData>::iterator match) {
   at(pos).frames.erase(match);
+  purgeCache();
+}
+
+void FrameCollection::editMatchScale(int pos, float newScale) {
+  auto match = matchAt(pos);
+
+  float oldScale = match->scale;
+  match->scale = newScale;
+
+  // This is aproximate and will need manual adjustment due to precision loss
+  match->originX = std::round((float)match->originX / newScale * oldScale);
+  match->originY = std::round((float)match->originY / newScale * oldScale);
+
+  _isCachedImages.at(pos) = false;
+}
+
+void FrameCollection::editMatchOriginX(int pos, int originX) {
+  matchAt(pos)->originX = originX;
+  _isCachedImages.at(pos) = false;
+}
+
+void FrameCollection::editMatchOriginY(int pos, int originY) {
+  matchAt(pos)->originY = originY;
+  _isCachedImages.at(pos) = false;
 }
 
 void FrameCollection::preloadAll() {

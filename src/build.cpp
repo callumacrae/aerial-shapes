@@ -41,6 +41,7 @@ int main(int argc, const char *argv[]) {
 
   initWindow(OUTPUT_WIDTH, OUTPUT_HEIGHT, "Build preview");
   GLuint image_tex;
+  std::vector<MatchData>::iterator matchForFrame;
   std::vector<MatchData> *matchesForFrame;
   bool doPreview = false;
   std::vector<MatchData>::iterator previewMatch;
@@ -49,6 +50,7 @@ int main(int argc, const char *argv[]) {
     cv::Mat image = doPreview ? frames.imageFor(previewMatch) : frames.imageAt(frameId);
     doPreview = false;
     matToTexture(image, &image_tex);
+    matchForFrame = frames.matchAt(frameId);
     matchesForFrame = frames.matchesAt(frameId);
   };
 
@@ -106,6 +108,53 @@ int main(int argc, const char *argv[]) {
       }
 
       ImGui::NewLine();
+    }
+
+    if (ImGui::TreeNode("Reposition")) {
+      ImGui::Text("Scale: %.2f", matchForFrame->scale);
+      ImGui::SameLine();
+      if (ImGui::SmallButton("-##scale-minus")) {
+        frames.editMatchScale(frameId, matchForFrame->scale + 0.01);
+        changed = true;
+        edited = true;
+      }
+      ImGui::SameLine();
+      if (ImGui::SmallButton("+##scale-plus")) {
+        frames.editMatchScale(frameId, matchForFrame->scale - 0.01);
+        changed = true;
+        edited = true;
+      }
+
+      ImGui::Text("x: %i", matchForFrame->originX);
+      ImGui::SameLine();
+      if (ImGui::SmallButton("-##x-minus")) {
+        frames.editMatchOriginX(frameId, matchForFrame->originX - 1);
+        changed = true;
+        edited = true;
+      }
+      ImGui::SameLine();
+      if (ImGui::SmallButton("+##x-plus")) {
+        frames.editMatchOriginX(frameId, matchForFrame->originX + 1);
+        changed = true;
+        edited = true;
+      }
+
+      ImGui::Text("y: %i", matchForFrame->originY);
+      ImGui::SameLine();
+      if (ImGui::SmallButton("-##y-minus")) {
+        frames.editMatchOriginY(frameId, matchForFrame->originY - 1);
+        changed = true;
+        edited = true;
+      }
+      ImGui::SameLine();
+      if (ImGui::SmallButton("+##y-plus")) {
+        frames.editMatchOriginY(frameId, matchForFrame->originY + 1);
+        changed = true;
+        edited = true;
+      }
+
+      ImGui::NewLine();
+      ImGui::TreePop();
     }
 
     if (ImGui::TreeNode("All matches")) {
