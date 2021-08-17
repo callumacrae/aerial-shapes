@@ -257,12 +257,18 @@ int main(int argc, const char *argv[]) {
         frameCollectionSaved = false;
       }
 
-      if (frames.size() && strlen(frameCollectionName)) {
-        if (ImGui::Button("Save")) {
-          std::string name(frameCollectionName);
-          frames.save(name);
+      if (strlen(frameCollectionName)) {
+        if (frames.size()) {
+          if (ImGui::Button("Save")) {
+            std::string name(frameCollectionName);
+            frames.save(name);
 
-          frameCollectionSaved = true;
+            frameCollectionSaved = true;
+          }
+        } else {
+          if (ImGui::Button("Load")) {
+            frames = FrameCollection(frameCollectionName);
+          }
         }
       }
 
