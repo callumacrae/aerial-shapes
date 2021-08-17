@@ -38,6 +38,8 @@ int main(int argc, const char *argv[]) {
   bool showEdges = false;
   bool showTemplate = true;
 
+  bool updateWhenChanged = true;
+
   auto readFinish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<float> readElapsed = readFinish - readStart;
 
@@ -195,6 +197,18 @@ int main(int argc, const char *argv[]) {
     changed |= ImGui::Checkbox("Show edges?", &showEdges);
     ImGui::SameLine();
     changed |= ImGui::Checkbox("Show template?", &showTemplate);
+
+    ImGui::NewLine();
+
+    // This only works when below the controls
+    ImGui::Checkbox("Update when changed?", &updateWhenChanged);
+    if (!updateWhenChanged) {
+      changed = false;
+      ImGui::SameLine();
+      if (ImGui::SmallButton("Update")) {
+        changed = true;
+      }
+    }
 
     ImGui::NewLine();
 
