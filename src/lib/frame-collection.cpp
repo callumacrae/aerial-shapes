@@ -213,6 +213,7 @@ void FrameCollection::removeMatch(int pos, std::vector<MatchData>::iterator matc
 
 void FrameCollection::editMatchScale(int pos, float newScale) {
   auto match = matchAt(pos);
+  MatchData matchBackup = *match;
 
   float oldScale = match->scale;
   match->scale = newScale;
@@ -222,16 +223,40 @@ void FrameCollection::editMatchScale(int pos, float newScale) {
   match->originY = std::round((float)match->originY / newScale * oldScale);
 
   _isCachedImages.at(pos) = false;
+
+  try {
+    imageAt(pos);
+  } catch(cv::Exception) {
+    *match = matchBackup;
+  }
 }
 
 void FrameCollection::editMatchOriginX(int pos, int originX) {
-  matchAt(pos)->originX = originX;
+  auto match = matchAt(pos);
+  MatchData matchBackup = *match;
+
+  match->originX = originX;
   _isCachedImages.at(pos) = false;
+
+  try {
+    imageAt(pos);
+  } catch(cv::Exception) {
+    *match = matchBackup;
+  }
 }
 
 void FrameCollection::editMatchOriginY(int pos, int originY) {
-  matchAt(pos)->originY = originY;
+  auto match = matchAt(pos);
+  MatchData matchBackup = *match;
+
+  match->originY = originY;
   _isCachedImages.at(pos) = false;
+
+  try {
+    imageAt(pos);
+  } catch(cv::Exception) {
+    *match = matchBackup;
+  }
 }
 
 void FrameCollection::preloadAll() {
