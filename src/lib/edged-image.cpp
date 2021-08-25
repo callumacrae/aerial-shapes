@@ -1,11 +1,38 @@
 #include "edged-image.hpp"
 
-// these vars can probs be hardcoded once i've figured out what it should be
-int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
+void EdgedImage::provideMatchContext(int templateOffsetX, int templateOffsetY) {
+  _matchContextOffsetX = templateOffsetX;
+  _matchContextOffsetY = templateOffsetY;
+}
+void EdgedImage::resetMatchContext() {
+  _matchContextOffsetX = 0;
+  _matchContextOffsetY = 0;
+}
+
+int EdgedImage::matchTo(const cv::Mat &templateImageIn, ImageMatch *match,
                         float offsetScaleStep, int offsetXStep, int offsetYStep,
                         float minOffsetScale, int maxOffset, float whiteBias) {
-  int channels = templateImage.channels();
+  int channels = templateImageIn.channels();
   CV_Assert(channels == 1);
+
+  cv::Mat templateImage;
+  if (_matchContextOffsetX || _matchContextOffsetY) {
+    cv::Mat normalisedTemplateImage =
+        cv::Mat::zeros(templateImageIn.size(), templateImageIn.type());
+    int x1 = _matchContextOffsetX < 0 ? 0 : _matchContextOffsetX;
+    int rectWidth = templateImageIn.cols - std::abs(_matchContextOffsetX);
+    int y1 = _matchContextOffsetY < 0 ? 0 : _matchContextOffsetY;
+    int rectHeight = templateImageIn.rows - std::abs(_matchContextOffsetY);
+    templateImageIn(cv::Rect(x1, y1, rectWidth, rectHeight))
+        .copyTo(normalisedTemplateImage(cv::Rect(x1 - _matchContextOffsetX,
+                                                 y1 - _matchContextOffsetY,
+                                                 rectWidth, rectHeight)));
+
+    // todo fix these copies, especially the second one
+    templateImage = normalisedTemplateImage;
+  } else {
+    templateImage = templateImageIn;
+  }
 
   // Converting to an array means we only have to do the bitwise operations
   // required to access a bitset once per run
@@ -52,11 +79,46 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
         // Search inside out, e.g. 0 -1 1 -2 2 -3 3
         int offsetX = offsetXRoot * offsetXMultiplier;
 
+        // Calculate if template offset is viable
+        float realScale = (float)width / STORED_EDGES_WIDTH;
+        if (_matchContextOffsetX < 0) {
+          int x1 = round((originX + offsetX + _matchContextOffsetX * scale) *
+                         realScale);
+          if (x1 < 0) {
+            continue;
+          }
+        } else if (_matchContextOffsetX > 0) {
+          int x2 =
+              originX +
+              round((offsetX + (_matchContextOffsetX + CANVAS_WIDTH) * scale) *
+                    realScale);
+          if (x2 > width) {
+            continue;
+          }
+        }
+
         for (int offsetYRoot = 0; offsetYRoot <= maxOffsetY;
              offsetYRoot += offsetYStep) {
           for (int offsetYMultiplier = -1; offsetYMultiplier <= 1;
                offsetYMultiplier += 2) {
             int offsetY = offsetYRoot * offsetYMultiplier;
+
+            if (_matchContextOffsetY < 0) {
+              int y1 =
+                  round((originY + offsetY + _matchContextOffsetY * scale) *
+                        realScale);
+              if (y1 < 0) {
+                continue;
+              }
+            } else if (_matchContextOffsetY > 0) {
+              int y2 = originY +
+                       round((offsetY +
+                              (_matchContextOffsetY + CANVAS_HEIGHT) * scale) *
+                             realScale);
+              if (y2 > height) {
+                continue;
+              }
+            }
 
             ImageMatch match;
             if (runs != 0) {
@@ -81,6 +143,8 @@ int EdgedImage::matchTo(const cv::Mat &templateImage, ImageMatch *match,
 
               if (match.percentage > bestMatch.percentage) {
                 bestMatch = match;
+                bestMatch.originX -= _matchContextOffsetX * scale;
+                bestMatch.originY -= _matchContextOffsetY * scale;
               }
             }
 

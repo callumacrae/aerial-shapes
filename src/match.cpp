@@ -22,10 +22,12 @@ int main(int argc, const char *argv[]) {
   bool frameCollectionSaved = false;
 
   int shape = TemplateShape_Rect;
-  int width = 100;
+  int width = 48;
   int height = 550;
   // Algorithm is flawed: it'll probably zoom all the way in if lineWidth > 1
   int lineWidth = 1;
+  int templateOffsetX = 0;
+  int templateOffsetY = 0;
 
   float offsetScaleStep = MATCH_OFFSET_SCALE_STEP;
   int offsetXStep = MATCH_OFFSET_X_STEP;
@@ -60,19 +62,21 @@ int main(int argc, const char *argv[]) {
   auto generatePreviewTexture = [&]() {
     cv::Mat canvas = cv::Mat::zeros(CANVAS_HEIGHT, CANVAS_WIDTH, CV_8UC3);
 
+    cv::Point center(CANVAS_WIDTH / 2 + templateOffsetX,
+                     CANVAS_HEIGHT / 2 + templateOffsetY);
     if (shape == TemplateShape_Rect) {
-      cv::Point pointA((CANVAS_WIDTH - width) / 2,
-                       (CANVAS_HEIGHT - height) / 2);
-      cv::Point pointB((CANVAS_WIDTH + width) / 2,
-                       (CANVAS_HEIGHT + height) / 2);
-      cv::rectangle(canvas, pointA, pointB, cv::Scalar(0, 0, 255), lineWidth);
+      cv::Point diff(width / 2, height / 2);
+      cv::rectangle(canvas, center - diff, center + diff, cv::Scalar(0, 0, 255),
+                    lineWidth);
     } else if (shape == TemplateShape_Circle) {
-      cv::Point center(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
       cv::circle(canvas, center, width / 2, cv::Scalar(0, 0, 255), lineWidth);
     }
 
     cv::Mat greyCanvas;
     cv::cvtColor(canvas, greyCanvas, cv::COLOR_BGR2GRAY);
+
+    ImageMatch oldBestMatch = bestMatch;
+    EdgedImage *oldBestMatchImage = bestMatchImage;
 
     bestMatch = ImageMatch();
     bestMatchImage = nullptr;
@@ -85,6 +89,7 @@ int main(int argc, const char *argv[]) {
     } else {
       auto matchStart = std::chrono::high_resolution_clock::now();
 
+      sourceImages.provideMatchContext(templateOffsetX, templateOffsetY);
       runs = sourceImages.matchTo(greyCanvas, &bestMatch, &bestMatchImage,
                                   offsetScaleStep, offsetXStep, offsetYStep,
                                   minOffsetScale, maxOffset, whiteBias);
@@ -93,6 +98,12 @@ int main(int argc, const char *argv[]) {
       matchElapsed = matchFinish - matchStart;
 
       orderedImages.sortBy("match-percentage");
+
+      // This displays the wrong image but stops a segfault
+      if (!bestMatchImage) {
+        bestMatch = oldBestMatch;
+        bestMatchImage = oldBestMatchImage;
+      }
     }
 
     auto previewStart = std::chrono::high_resolution_clock::now();
@@ -181,6 +192,28 @@ int main(int argc, const char *argv[]) {
       changed |= ImGui::SliderInt("Height", &height, 0, CANVAS_HEIGHT + 50);
     }
     /* changed |= ImGui::SliderInt("Line width", &lineWidth, 0, 50); */
+    changed |= ImGui::SliderInt("Offset X", &templateOffsetX, -100, 100);
+    ImGui::SameLine();
+    if (ImGui::SmallButton("-##lessoffx")) {
+      templateOffsetX--;
+      changed = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::SmallButton("+##moreoffx")) {
+      templateOffsetX++;
+      changed = true;
+    }
+    changed |= ImGui::SliderInt("Offset Y", &templateOffsetY, -100, 100);
+    ImGui::SameLine();
+    if (ImGui::SmallButton("-##lessoffy")) {
+      templateOffsetY--;
+      changed = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::SmallButton("+##moreoffy")) {
+      templateOffsetY++;
+      changed = true;
+    }
 
     ImGui::NewLine();
 

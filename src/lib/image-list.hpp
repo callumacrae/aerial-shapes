@@ -20,6 +20,8 @@ public:
 
 private:
   std::string dirPath;
+  int _matchContextOffsetX;
+  int _matchContextOffsetY;
 
   bool getStored();
   void addFile(const std::filesystem::directory_entry &file);
@@ -31,6 +33,9 @@ public:
   void generate();
   void save(bool async = true);
   int sync();
+
+  void provideMatchContext(int templateOffsetX, int templateOffsetY);
+  void resetMatchContext();
 
   int matchTo(const cv::Mat &templateImage, ImageMatch *match,
               EdgedImage **bestMatchImage,

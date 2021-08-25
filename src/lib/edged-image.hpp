@@ -21,6 +21,8 @@ class EdgedImage {
                    float whiteBias = MATCH_WHITE_BIAS) const;
 
   cv::Mat originalImage;
+  int _matchContextOffsetX;
+  int _matchContextOffsetY;
 
   // @todo make this a bit more classey
 public:
@@ -54,6 +56,9 @@ public:
         detectionCannyJoinByX(detectionCannyJoinByX),
         detectionCannyJoinByY(detectionCannyJoinByY),
         detectionBinaryThreshold(detectionBinaryThreshold) {}
+
+  void provideMatchContext(int templateOffsetX, int templateOffsetY);
+  void resetMatchContext();
 
   int matchTo(const cv::Mat &templateImage, ImageMatch *match,
               float offsetScaleStep = MATCH_OFFSET_SCALE_STEP,
