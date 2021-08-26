@@ -8,8 +8,8 @@
 #include "bitset-serialise.hpp"
 
 struct ImageMatch {
-  float percentage = 0, scale;
-  int originX, originY;
+  float percentage = 0, scale = 1;
+  int originX = 0, originY = 0;
 };
 
 class EdgedImage {

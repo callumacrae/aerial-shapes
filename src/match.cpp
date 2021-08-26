@@ -142,9 +142,15 @@ int main(int argc, const char *argv[]) {
     roi.width = round(CANVAS_WIDTH * realScale * bestMatch.scale);
     roi.height = round(CANVAS_HEIGHT * realScale * bestMatch.scale);
 
-    cv::Mat cropped = sourcePlusEdges(roi);
     cv::Mat scaledImage;
-    cv::resize(cropped, scaledImage, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT));
+    try {
+      cv::Mat cropped = sourcePlusEdges(roi);
+      cv::resize(cropped, scaledImage, cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT));
+    } catch (cv::Exception) {
+      // This sucks but is better than crashing the programme
+      scaledImage = cv::Mat::zeros(cv::Size(OUTPUT_WIDTH, OUTPUT_HEIGHT),
+                                   sourcePlusEdges.type());
+    }
 
     cv::Mat out;
     if (showTemplate) {

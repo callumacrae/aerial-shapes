@@ -79,43 +79,29 @@ int EdgedImage::matchTo(const cv::Mat &templateImageIn, ImageMatch *match,
         // Search inside out, e.g. 0 -1 1 -2 2 -3 3
         int offsetX = offsetXRoot * offsetXMultiplier;
 
-        // Calculate if template offset is viable
-        float realScale = (float)width / STORED_EDGES_WIDTH;
-        if (_matchContextOffsetX < 0) {
-          int x1 = round((originX + offsetX + _matchContextOffsetX * scale) *
-                         realScale);
-          if (x1 < 0) {
-            continue;
-          }
-        } else if (_matchContextOffsetX > 0) {
-          int x2 =
-              originX +
-              round((offsetX + (_matchContextOffsetX + CANVAS_WIDTH) * scale) *
-                    realScale);
-          if (x2 > width) {
-            continue;
-          }
-        }
-
         for (int offsetYRoot = 0; offsetYRoot <= maxOffsetY;
              offsetYRoot += offsetYStep) {
           for (int offsetYMultiplier = -1; offsetYMultiplier <= 1;
                offsetYMultiplier += 2) {
             int offsetY = offsetYRoot * offsetYMultiplier;
 
-            if (_matchContextOffsetY < 0) {
-              int y1 =
-                  round((originY + offsetY + _matchContextOffsetY * scale) *
-                        realScale);
-              if (y1 < 0) {
-                continue;
+            // Calculate if template offset is viable
+            {
+              float realScale = (float)width / STORED_EDGES_WIDTH;
+              int finalX = originX + offsetX - _matchContextOffsetX * scale;
+              int finalY = originY + offsetY - _matchContextOffsetY * scale;
+              cv::Rect roi;
+              roi.x = round(finalX * realScale);
+              roi.y = round(finalY * realScale);
+              roi.width = round(CANVAS_WIDTH * realScale * scale);
+              roi.height = round(CANVAS_HEIGHT * realScale * scale);
+
+              if (roi.x < 0 || roi.x + roi.width > width) {
+                // We're in the y loop so we can break here - will be invalid
+                // for every item in the loop
+                break;
               }
-            } else if (_matchContextOffsetY > 0) {
-              int y2 = originY +
-                       round((offsetY +
-                              (_matchContextOffsetY + CANVAS_HEIGHT) * scale) *
-                             realScale);
-              if (y2 > height) {
+              if (roi.y < 0 || roi.y + roi.height > height) {
                 continue;
               }
             }
